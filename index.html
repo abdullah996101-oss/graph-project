@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="ar" dir="rtl">
+<html lang="ar" dir="rtl" class="">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -12,8 +12,8 @@
       --accent: #22d3ee; --danger: #ef4444; --ok: #22c55e; --warn: #f59e0b;
       --chip: #0b1422; --border: #172133; --shadow: 0 1px 0 #0c111b, inset 0 1px 0 rgba(255,255,255,.02);
     }
-    .light {
-      /* الوضع الفاتح */
+    /* عندما نضيف كلاس light على <html> تصبح المتغيّرات التالية فعّالة */
+    :root.light {
       --bg: #f8fafc; --panel: #ffffff; --panel-2: #f3f4f6; --text: #0f172a;
       --muted: #475569; --grid-sub: #e5e7eb; --grid: #cbd5e1; --axis: #1f2937;
       --accent: #0ea5e9; --danger: #dc2626; --ok: #16a34a; --warn: #d97706;
@@ -62,7 +62,7 @@
     canvas { display: block; width: 100%; height: 100%; background: transparent; }
 
     .status { position: absolute; bottom: 8px; left: 10px; background: rgba(2,6,23,.55); border: 1px solid var(--border); border-radius: 10px; padding: 6px 10px; font-size: 12px; color: #cbd5e1; backdrop-filter: blur(4px); }
-    .light .status { background: rgba(255,255,255,.65); color: #0f172a; }
+    body.light .status, .light .status { background: rgba(255,255,255,.75); color: #0f172a; border-color: #cbd5e1; }
 
     .floating { position: absolute; top: 8px; left: 12px; display: flex; gap: 6px; z-index: 5; }
     .fab { background: var(--panel); border: 1px solid var(--border); color: var(--text); padding: 6px 10px; border-radius: 10px; cursor: pointer; font-size: 13px; }
@@ -71,10 +71,10 @@
     .slider-card { display: grid; gap: 8px; }
 
     .tooltip { position: absolute; pointer-events: none; background: rgba(2,6,23,.9); color: #e2e8f0; border: 1px solid var(--border); padding: 6px 8px; border-radius: 8px; font-size: 12px; transform: translate(-50%, -120%); white-space: nowrap; }
-    .light .tooltip { background: rgba(255,255,255,.95); color: #0f172a; }
+    body.light .tooltip, .light .tooltip { background: rgba(255,255,255,.95); color: #0f172a; }
   </style>
 </head>
-<body>
+<body class="">
   <div class="app" id="appRoot">
     <aside class="sidebar">
       <div class="header">
@@ -142,18 +142,11 @@
   const toEnglishDigits = (s) => String(s).replace(/[٠-٩]/g, ch => EN_DIGITS[AR_DIGITS.indexOf(ch)]).replace(/،/g, ',');
 
   // ======= أسماء دوال عربية -> Math =======
-  const arabicFns = [
-    /\bجا\b/g, 'sin',
-    /\bجتا\b/g, 'cos',
-    /\bظا\b/g, 'tan',
-    /\bجذر\b/g, 'sqrt',
-    /\bقيمة_?مطلقة\b/g, 'abs',
-    /\bلو\b/g, 'log',
-    /\bلن\b/g, 'ln'
+  const arabicPairs = [
+    [/\bجا\b/g, 'sin'], [/\bجتا\b/g, 'cos'], [/\bظا\b/g, 'tan'],
+    [/\بجذر\b/g, 'sqrt'], [/\bقيمة_?مطلقة\b/g, 'abs'],
+    [/\bلو\b/g, 'log'], [/\bلن\b/g, 'ln']
   ];
-  // نحولها إلى مصفوفة أزواج
-  const arabicPairs = [];
-  for (let i=0;i<arabicFns.length;i+=2) arabicPairs.push([arabicFns[i], arabicFns[i+1]]);
 
   // ======= الحالة العامة =======
   const canvas = document.getElementById('canvas');
@@ -172,44 +165,34 @@
     mouse:{x:0,y:0,wx:0,wy:0},
     theme: 'dark',
     expressions: [ { id: uid(), color: COLORS[0], text: 'ص = س^2', visible: true } ],
-    sliders: [ /* {name:'a', min:-5, max:5, step:0.1, value:1} */ ],
-    polylines: [] // مصفوفات نقاط لرسم التقاطعات والمماس
+    sliders: [],
+    polylines: []
   };
 
   // ======= تحويل/تطبيع نص =======
   function preprocessBasic(s){
-    // تطبيع عام
     s = toEnglishDigits(String(s));
 
-    // توحيد أسماء المتغيرات/الثوابت
     s = s
-      .replace(/[سx]/gi, 'x')     // س → x
-      .replace(/[صy]/gi, 'y')     // ص → y
-      .replace(/[θϴ]/g, 'theta')  // θ → theta
-      .replace(/π|باي/gi, 'PI')   // π/باي → PI
-      .replace(/هـ/g, 'E')        // هـ → E (عدد أويلر)
+      .replace(/[سx]/gi, 'x')
+      .replace(/[صy]/gi, 'y')
+      .replace(/[θϴ]/g, 'theta')
+      .replace(/π|باي/gi, 'PI')
+      .replace(/هـ/g, 'E')
       .replace(/[÷]/g, '/')
       .replace(/[×]/g, '*')
       .replace(/\^/g, '**');
 
-    // دوال عربية → إنجليزية
     arabicPairs.forEach(([re, rep]) => s = s.replace(re, rep));
-    // ln ← log (الطبيعي)
     s = s.replace(/\bln\(/g, 'log(');
 
-    // إدراج الضرب الضمني (2x, (x+1)(x-1), 2sqrt(x), 3PIx, ...)
+    // إدراج الضرب الضمني
     const FN = '(sin|cos|tan|sqrt|abs|log)';
-    // رقم قبل متغير/ثابت/قوس
     s = s.replace(new RegExp('(\\d)\\s*(x|y|theta|t|PI|E|\\()', 'gi'), '$1*$2');
-    // متغير/ثابت/قوس قبل رقم/قوس
     s = s.replace(new RegExp('(x|y|theta|t|PI|E|\\))\\s*(\\d|\\()', 'gi'), '$1*$2');
-    // رقم/متغير/ثابت قبل دالة
     s = s.replace(new RegExp(`(\\d|x|y|theta|t|PI|E)\\s*${FN}`, 'gi'), '$1*$2');
-    // قوس مغلق قبل دالة
     s = s.replace(new RegExp(`\\)\\s*${FN}`, 'gi'), ')*$1');
-    // قوس مغلق قبل قوس مفتوح
     s = s.replace(/\)\s*\(/g, ')*(');
-    // متغير ملاصق لثابت والعكس
     s = s.replace(/(x|y|theta|t)\s*(PI|E)/gi, '$1*$2');
     s = s.replace(/(PI|E)\s*(x|y|theta|t)/gi, '$1*$2');
 
@@ -218,52 +201,34 @@
 
   function containsY(s){ return /\by\b/i.test(String(s)); }
 
-  /**
-   * يحاول عزل y إذا كانت المعادلة خطية فيها.
-   * أنماط مدعومة (على أي طرف):
-   *   y ± b(x)           => y = other ∓ b
-   *   a(x)*y             => y = other / a
-   *   a(x)*y ± b(x)      => y = (other ∓ b)/a
-   *   y                  => y = other
-   * يعيد JavaScript expr أو null.
-   */
+  // محاولة عزل y خطيًا
   function tryLinearSolveForY(lhsRaw, rhsRaw){
     const L0 = preprocessBasic(lhsRaw);
     const R0 = preprocessBasic(rhsRaw);
 
     function solve(side, other){
-      if (containsY(other)) return null; // الطرف المقابل يجب ألا يحوي y
+      if (containsY(other)) return null;
       let m;
-      // a(x)*y ± b(x)
       m = side.match(/^(.+?)\*?y\s*([+\-])\s*(.+)$/i);
       if (m && !containsY(m[1]) && !containsY(m[3])) {
         const a=m[1].trim(), op=m[2], b=m[3].trim();
         const num = op==='+' ? `(${other})-(${b})` : `(${other})+(${b})`;
         return `(${num})/(${a})`;
       }
-      // y ± b(x)
       m = side.match(/^y\s*([+\-])\s*(.+)$/i);
       if (m && !containsY(m[2])) {
         const op=m[1], b=m[2].trim();
         return op==='+' ? `(${other})-(${b})` : `(${other})+(${b})`;
       }
-      // a(x)*y
       m = side.match(/^(.+?)\*?y$/i);
       if (m && !containsY(m[1])) {
-        const a=m[1].trim();
-        return `(${other})/(${a})`;
+        const a=m[1].trim(); return `(${other})/(${a})`;
       }
-      // y فقط
       if (/^y$/i.test(side)) return `${other}`;
       return null;
     }
-
-    // حالة y في الطرف الأيمن
-    let js = solve(R0, L0);
-    if (js) return js;
-    // حالة y في الطرف الأيسر
-    js = solve(L0, R0);
-    if (js) return js;
+    let js = solve(R0, L0); if (js) return js;
+    js = solve(L0, R0); if (js) return js;
     return null;
   }
 
@@ -273,31 +238,26 @@
   }
 
   function extractDomain(raw){
-    // يبحث عن { ... } ويرجع كائن مجال
     const m = raw.match(/\{([^}]*)\}/);
     if(!m) return {text: raw, domain: null};
     const inside = preprocessBasic(m[1]);
     let dom = {xmin: null, xmax: null, ymin: null, ymax: null, tmin: null, tmax: null, thmin:null, thmax:null};
-    // x-range
     let r;
     if(r = inside.match(/([\-+*/().,x0-9EPI ]*?)<=?x<=?([\-+*/().,x0-9EPI ]*?)/i)){
       dom.xmin = r[1].trim(); dom.xmax = r[2].trim();
     } else if(r = inside.match(/x\s*in\s*\[([^,]+),([^\]]+)\]/i)){
       dom.xmin = r[1].trim(); dom.xmax = r[2].trim();
     }
-    // y-range
     if(r = inside.match(/([\-+*/().,x0-9EPI ]*?)<=?y<=?([\-+*/().,x0-9EPI ]*?)/i)){
       dom.ymin = r[1].trim(); dom.ymax = r[2].trim();
     } else if(r = inside.match(/y\s*in\s*\[([^,]+),([^\]]+)\]/i)){
       dom.ymin = r[1].trim(); dom.ymax = r[2].trim();
     }
-    // t-range
     if(r = inside.match(/([\-+*/().,t0-9EPI ]*?)<=?t<=?([\-+*/().,t0-9EPI ]*?)/i)){
       dom.tmin = r[1].trim(); dom.tmax = r[2].trim();
     } else if(r = inside.match(/t\s*in\s*\[([^,]+),([^\]]+)\]/i)){
       dom.tmin = r[1].trim(); dom.tmax = r[2].trim();
     }
-    // theta-range
     if(r = inside.match(/([\-+*/().,0-9EPI ]*?)<=?(theta|ϴ|θ)<=?([\-+*/().,0-9EPI ]*?)/i)){
       dom.thmin = r[1].trim(); dom.thmax = r[3].trim();
     } else if(r = inside.match(/(theta|ϴ|θ)\s*in\s*\[([^,]+),([^\]]+)\]/i)){
@@ -307,50 +267,37 @@
     return {text: cleaned, domain: dom};
   }
 
-  // ======= تحديد نوع الإدخال (صريح/ضمني/بارامتري/قطبي) + عزل y إن أمكن =======
+  // تحديد النوع + عزل y إن أمكن
   function normalizeExpr(raw){
     if(!raw) return {kind:'none'};
-
     const {text, domain} = extractDomain(raw);
     let s = String(text).trim();
-
     const hasEq = s.includes('=');
+
     if (hasEq) {
       const [lhsRaw, rhsRaw] = s.split('=');
       const lhs = preprocessBasic(lhsRaw), rhs = preprocessBasic(rhsRaw);
 
-      // بارامترية: x(t)=..., y(t)=...
       if (/x\(t\)\s*=/.test(lhs+rhs) && /y\(t\)\s*=/.test(lhs+rhs)) {
         const pair = preprocessBasic(s);
         const mx = pair.match(/x\(t\)\s*=\s*([^,;]+)[,;]/i);
         const my = pair.match(/y\(t\)\s*=\s*([^,;]+)/i);
         if (mx && my) return { kind:'param', xt: mx[1].trim(), yt: my[1].trim(), domain };
       }
-
-      // قطبية: r(θ)=...
       if (/r\((theta|ϴ|θ)\)\s*=/.test(lhs+rhs)) {
         const all = preprocessBasic(s);
         const mr = all.match(/r\((?:theta|ϴ|θ)\)\s*=\s*(.+)/i);
         if (mr) return { kind:'polar', rth: mr[1].trim(), domain };
       }
+      if (sideIsY(lhs)) return { kind:'explicit', js: preprocessBasic(rhsRaw), domain };
+      if (sideIsY(rhs)) return { kind:'explicit', js: preprocessBasic(lhsRaw), domain };
 
-      // صريحة: y منفردة على طرف
-      if (/^y$/i.test(preprocessBasic(lhsRaw).trim()))
-        return { kind:'explicit', js: preprocessBasic(rhsRaw), domain };
-      if (/^y$/i.test(preprocessBasic(rhsRaw).trim()))
-        return { kind:'explicit', js: preprocessBasic(lhsRaw), domain };
-
-      // محاولة عزل y إذا كانت خطية
       const solved = tryLinearSolveForY(lhsRaw, rhsRaw);
-      if (solved) {
-        return { kind:'explicit', js: preprocessBasic(solved), domain };
-      }
+      if (solved) return { kind:'explicit', js: preprocessBasic(solved), domain };
 
-      // ضمنية عامة
       return { kind:'implicit', eq: preprocessBasic(s), domain };
     }
 
-    // بدون مساواة: اعتبرها y = expr(x)
     return { kind:'explicit', js: preprocessBasic(s), domain };
   }
 
@@ -359,13 +306,10 @@
   }
 
   function buildScope(vars){
-    // يبني كائن نطاق للتقييم يتضمن Math + منزلقات + ثوابت
     const scope = Object.create(Math);
     scope.log10 = (v)=>Math.log10(v);
     scope.PI = Math.PI; scope.E = Math.E;
-    // المتغيّرات من المنزلقات
     for(const sl of state.sliders){ scope[sl.name] = sl.value; }
-    // متغيّرات إضافية من vars
     if(vars) for(const k of Object.keys(vars)) scope[k] = vars[k];
     return scope;
   }
@@ -376,7 +320,6 @@
     return Function('x', src).bind(buildScope());
   }
   function makeFn2(js){
-    // دالة بمتحوّلين x,y
     if(!js || !isSafe(js)) throw new Error('تعبير غير صالح');
     const src = `with(this){ return (${js}); }`;
     return Function('x','y', src).bind(buildScope());
@@ -410,40 +353,39 @@
     const c=[1,2,5,10].map(v=>v*p); let best=c[0]; for(const v of c) if(Math.abs(v-units)<Math.abs(best-units)) best=v; return best;
   }
 
+  function cssVar(name){ return getComputedStyle(document.body).getPropertyValue(name) || getComputedStyle(document.documentElement).getPropertyValue(name); }
+
   function drawGrid(){
     const r=devicePixelRatio||1, w=canvas.width, h=canvas.height;
     ctx.clearRect(0,0,w,h);
-    // خلفية
-    ctx.fillStyle = getComputedStyle(document.body).getPropertyValue('--bg');
-    ctx.fillRect(0,0,w,h);
+    ctx.fillStyle = cssVar('--bg'); ctx.fillRect(0,0,w,h);
 
     const step = niceStep(state.scale);
     const sub = step/5; const tl = screenToWorld(0,0), br = screenToWorld(w,h);
 
-    // فرعية
-    ctx.lineWidth=1; ctx.strokeStyle=getComputedStyle(document.body).getPropertyValue('--grid-sub'); ctx.beginPath();
+    // خطوط فرعية
+    ctx.lineWidth=1; ctx.strokeStyle=cssVar('--grid-sub'); ctx.beginPath();
     for(let x=Math.floor(tl.x/sub)*sub; x<=br.x; x+=sub){ const sx=worldToScreen(x,0).x; ctx.moveTo(sx+.5,0); ctx.lineTo(sx+.5,h); }
     for(let y=Math.floor(br.y/sub)*sub; y<=tl.y; y+=sub){ const sy=worldToScreen(0,y).y; ctx.moveTo(0,sy+.5); ctx.lineTo(w,sy+.5); }
     ctx.stroke();
 
-    // رئيسية
-    ctx.strokeStyle=getComputedStyle(document.body).getPropertyValue('--grid'); ctx.beginPath();
+    // خطوط رئيسية
+    ctx.strokeStyle=cssVar('--grid'); ctx.beginPath();
     for(let x=Math.floor(tl.x/step)*step; x<=br.x; x+=step){ const sx=worldToScreen(x,0).x; ctx.moveTo(sx+.5,0); ctx.lineTo(sx+.5,h); }
     for(let y=Math.floor(br.y/step)*step; y<=tl.y; y+=step){ const sy=worldToScreen(0,y).y; ctx.moveTo(0,sy+.5); ctx.lineTo(w,sy+.5); }
     ctx.stroke();
 
-    // محاور
-    ctx.strokeStyle=getComputedStyle(document.body).getPropertyValue('--axis'); ctx.lineWidth=1.5; ctx.beginPath();
+    // المحاور
+    ctx.strokeStyle=cssVar('--axis'); ctx.lineWidth=1.5; ctx.beginPath();
     const sx0=worldToScreen(0,0).x, sy0=worldToScreen(0,0).y; ctx.moveTo(sx0+.5,0); ctx.lineTo(sx0+.5,h); ctx.moveTo(0,sy0+.5); ctx.lineTo(w,sy0+.5); ctx.stroke();
 
-    // تسميات
-    ctx.fillStyle = getComputedStyle(document.body).getPropertyValue('--axis');
+    // التسميات والأرقام
+    ctx.fillStyle = cssVar('--axis');
     ctx.font = `${12*r}px system-ui, -apple-system, Segoe UI, Noto Sans Arabic, Arial`;
     ctx.textAlign='right'; ctx.textBaseline='top'; ctx.fillText('س', Math.min(w-6,w-6), sy0 + 6);
     ctx.textAlign='left'; ctx.textBaseline='bottom'; ctx.fillText('ص', sx0 + 6, Math.max(12,12));
 
-    // أرقام
-    ctx.fillStyle=getComputedStyle(document.body).getPropertyValue('--muted');
+    ctx.fillStyle=cssVar('--muted');
     ctx.textAlign='right'; ctx.textBaseline='top';
     for(let x=Math.floor(tl.x/step)*step; x<=br.x; x+=step){ if(Math.abs(x)<1e-12) continue; const p=worldToScreen(x,0); ctx.fillText(toArabicDigits(x.toFixed(2).replace(/\.00$/,'')), p.x-4, sy0+6); }
     ctx.textAlign='left'; ctx.textBaseline='bottom';
@@ -452,7 +394,6 @@
 
   // ======= رسم المنحنيات =======
   function adaptiveSampleX(f, left, right){
-    // أخذ عينات تكيفي بسيط على [left,right]
     const pts=[]; const maxDepth=12; const eps=1e-2; const N0=25;
     function rec(a,b,ya,yb,depth){
       const m=(a+b)/2; let ym=f(m); if(!isFinite(ya)) ya=f(a); if(!isFinite(yb)) yb=f(b);
@@ -460,11 +401,11 @@
       const ylin=(ya+yb)/2; if(Math.abs(ym-ylin)<eps*(1+Math.abs(ym))){ pts.push([a,ya],[b,yb]); return; }
       rec(a,m,ya,ym,depth+1); rec(m,b,ym,yb,depth+1);
     }
-    let yL=f(left), yR=f(right); if(!isFinite(yL)||!isFinite(yR)){ // عيّنات أولية
+    let yL=f(left), yR=f(right);
+    if(!isFinite(yL)||!isFinite(yR)){
       const dx=(right-left)/N0; let x=left; let lastX=null,lastY=null;
       for(let i=0;i<=N0;i++,x+=dx){ const y=f(x); if(isFinite(y)){ if(lastX!==null){ rec(lastX,x,lastY,y,0); } lastX=x; lastY=y; } }
     } else rec(left,right,yL,yR,0);
-    // دمج وترتيب
     pts.sort((a,b)=>a[0]-b[0]); const out=[]; let prev=null;
     for(const p of pts){ if(!prev || p[0]!==prev[0]) out.push(p); prev=p; }
     return out;
@@ -495,7 +436,6 @@
           ctx.stroke();
         }
         else if(spec.kind==='implicit'){
-          // Marching Squares بسيط
           const tl=screenToWorld(0,0), br=screenToWorld(canvas.width, canvas.height);
           const nx=60, ny=40; const dx=(br.x-tl.x)/nx, dy=(tl.y-br.y)/ny;
           const F = (()=>{ const eq = spec.eq.replace('=','-(')+')'; return makeFn2(eq); })();
@@ -505,16 +445,11 @@
             for(let ix=0; ix<nx; ix++){
               const x0=tl.x+ix*dx, y0=tl.y-iy*dy; const x1=x0+dx, y1=y0-dy;
               const v00=val(x0,y0), v10=val(x1,y0), v01=val(x0,y1), v11=val(x1,y1);
-              const s00=v00>0, s10=v10>0, s01=v01>0, s11=v11>0;
               function lerp(a,b,ta,tb){ const t=ta/(ta-tb); return a + (b-a)*t; }
               const edges=[];
-              // أعلى
               if(isFinite(v00)&&isFinite(v10) && (v00>0)!=(v10>0)){ const px=lerp(x0,x1,v00,v10), py=y0; edges.push([px,py]); }
-              // يمين
               if(isFinite(v10)&&isFinite(v11) && (v10>0)!=(v11>0)){ const px=x1, py=lerp(y0,y1,v10,v11); edges.push([px,py]); }
-              // أسفل
               if(isFinite(v01)&&isFinite(v11) && (v01>0)!=(v11>0)){ const px=lerp(x0,x1,v01,v11), py=y1; edges.push([px,py]); }
-              // يسار
               if(isFinite(v00)&&isFinite(v01) && (v00>0)!=(v01>0)){ const px=x0, py=lerp(y0,y1,v00,v01); edges.push([px,py]); }
               if(edges.length===2){
                 const p0=worldToScreen(edges[0][0], edges[0][1]);
@@ -565,7 +500,7 @@
   function segInter(p,q,r,s){
     function cross(a,b,c){ return (b[0]-a[0])*(c[1]-a[1]) - (b[1]-a[1])*(c[0]-a[0]); }
     const d = cross(p,q,r), e = cross(p,q,s), f=cross(r,s,p), g=cross(r,s,q);
-    if((d===0&&e===0&&f===0&&g===0)) return null; // متوازية
+    if((d===0&&e===0&&f===0&&g===0)) return null;
     if((d>0)!=(e>0) && (f>0)!=(g>0)){
       const A=q[0]-p[0], B=r[0]-s[0], C=q[1]-p[1], D=r[1]-s[1], E=r[0]-p[0], F=r[1]-p[1];
       const det=A*D-B*C; if(Math.abs(det)<1e-12) return null; const t=(E*D - B*F)/det; return [p[0]+t*A, p[1]+t*C];
@@ -575,22 +510,14 @@
 
   // ======= مماس وميل (Alt+Click) — إصلاح المتغير =======
   function drawTangentAt(xw, yw) {
-    let best = null;
-    let bestCurve = null;
-    let bestP = null;
-
+    let best = null, bestCurve = null, bestP = null;
     for (const pl of state.polylines) {
       for (const P of pl.points) {
         const d = (P[0] - xw) ** 2 + (P[1] - yw) ** 2;
-        if (best === null || d < best) {
-          best = d;
-          bestCurve = pl;
-          bestP = P;
-        }
+        if (best === null || d < best) { best = d; bestCurve = pl; bestP = P; }
       }
     }
-    if (!bestCurve) return;
-    if (!bestP) bestP = [xw, yw];
+    if (!bestCurve) return; if (!bestP) bestP = [xw, yw];
 
     const pts = bestCurve.points;
     let idx = pts.indexOf(bestP);
@@ -601,26 +528,17 @@
         return d < dbi ? i : bi;
       }, 0);
     }
-    const i0 = Math.max(0, idx - 1);
-    const i1 = Math.min(pts.length - 1, idx + 1);
-    const dx = pts[i1][0] - pts[i0][0];
-    const dy = pts[i1][1] - pts[i0][1];
+    const i0 = Math.max(0, idx - 1), i1 = Math.min(pts.length - 1, idx + 1);
+    const dx = pts[i1][0] - pts[i0][0], dy = pts[i1][1] - pts[i0][1];
     if (Math.abs(dx) + Math.abs(dy) < 1e-12) return;
-
-    const slope = dy / dx;
-    const len = 4;
+    const slope = dy / dx, len = 4;
     const xA = bestP[0] - len, yA = bestP[1] - slope * len;
     const xB = bestP[0] + len, yB = bestP[1] + slope * len;
 
-    const A = worldToScreen(xA, yA);
-    const B = worldToScreen(xB, yB);
-    const S = worldToScreen(bestP[0], bestP[1]);
-
-    ctx.strokeStyle = '#f87171';
-    ctx.lineWidth = 2 * (devicePixelRatio || 1);
+    const A = worldToScreen(xA, yA), B = worldToScreen(xB, yB), S = worldToScreen(bestP[0], bestP[1]);
+    ctx.strokeStyle = '#f87171'; ctx.lineWidth = 2 * (devicePixelRatio || 1);
     ctx.beginPath(); ctx.moveTo(A.x, A.y); ctx.lineTo(B.x, B.y); ctx.stroke();
-    ctx.fillStyle = '#fda4af';
-    ctx.beginPath(); ctx.arc(S.x, S.y, 4 * (devicePixelRatio || 1), 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = '#fda4af'; ctx.beginPath(); ctx.arc(S.x, S.y, 4*(devicePixelRatio||1), 0, Math.PI*2); ctx.fill();
 
     showTooltip(S.x, S.y, `النقطة الأقرب≈ (س=${bestP[0].toFixed(3)}, ص=${bestP[1].toFixed(3)}), الميل m≈ ${slope.toFixed(3)}`);
   }
@@ -667,11 +585,15 @@
 
       const row2=document.createElement('div'); row2.className='range-row';
       const lmin=document.createElement('input'); lmin.className='input'; lmin.value=sl.min;
-      lmin.addEventListener('change',()=>{ sl.min=parseFloat(lmin.value)||sl.min; range.min=sl.min; }); row2.appendChild(lmin);
+      lmin.addEventListener('change',()=>{ sl.min=parseFloat(lmin.value)||sl.min; range.min=sl.min; });
+      row2.appendChild(lmin);
       const lstep=document.createElement('input'); lstep.className='input'; lstep.value=sl.step;
-      lstep.addEventListener('change',()=>{ sl.step=parseFloat(lstep.value)||sl.step; range.step=sl.step; }); row2.appendChild(lstep);
+      lstep.addEventListener('change',()=>{ sl.step=parseFloat(lstep.value)||sl.step; range.step=sl.step; });
+      row2.appendChild(lstep);
       const lmax=document.createElement('input'); lmax.className='input'; lmax.value=sl.max;
-      lmax.addEventListener('change',()=>{ sl.max=parseFloat(lmax.value)||sl.max; range.max=sl.max; }); row2.appendChild(lmax);
+      lmax.addEventListener('change',()=>{ sl.max=parseFloat(lmax.value)||sl.max; range.max=sl.max; });
+      row2.appendChild(lmax);
+
       const hint=document.createElement('div'); hint.className='muted'; hint.style.gridColumn='1/-1'; hint.textContent='الترتيب: [الحد الأدنى, الخطوة, الحد الأقصى]';
       card.appendChild(row2); card.appendChild(hint);
       sliderListEl.appendChild(card);
@@ -712,24 +634,55 @@
   document.getElementById('btnSave').onclick=()=>{ const blob=new Blob([JSON.stringify(serialize(),null,2)],{type:'application/json'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='graph-settings.json'; a.click(); };
   document.getElementById('btnLoad').onclick=()=>{ document.getElementById('fileLoader').click(); };
   document.getElementById('fileLoader').addEventListener('change', (e)=>{ const f=e.target.files[0]; if(!f) return; const rd=new FileReader(); rd.onload=()=>{ try{ const obj=JSON.parse(rd.result); deserialize(obj); renderExprList(); renderSliders(); draw(); persistDeb(); }catch(err){ alert('ملف غير صالح'); } }; rd.readAsText(f); });
-  document.getElementById('btnTheme').onclick=()=>{ const root=document.getElementById('appRoot'); if(root.classList.contains('light')){ root.classList.remove('light'); state.theme='dark'; } else { root.classList.add('light'); state.theme='light'; } draw(); persistDeb(); };
+
+  // تبديل المظهر: ضع كلاس light على html و body
+  document.getElementById('btnTheme').onclick = () => {
+    const html = document.documentElement;
+    const body = document.body;
+    const toLight = !html.classList.contains('light');
+    [html, body].forEach(el => el.classList.toggle('light', toLight));
+    state.theme = toLight ? 'light' : 'dark';
+    draw(); persistDeb();
+  };
 
   // ======= حالة/مشاركة =======
   function updateStatus(){ statusEl.textContent = `س = ${toArabicDigits(state.mouse.wx.toFixed(3))}, ص = ${toArabicDigits(state.mouse.wy.toFixed(3))} | مقياس: 1u ≈ ${Math.round(state.scale)}px`; }
   function flash(msg){ const old=statusEl.textContent; statusEl.textContent=msg; setTimeout(()=>statusEl.textContent=old, 1200); }
 
-  function serialize(){ return { v:2, cx:state.centerX, cy:state.centerY, sc:state.scale, theme:state.theme, expr: state.expressions.map(e=>({t:e.text,c:e.color,v:!!e.visible})), sliders: state.sliders }; }
-  function deserialize(o){ if(!o) return; if(typeof o.cx==='number') state.centerX=o.cx; if(typeof o.cy==='number') state.centerY=o.cy; if(typeof o.sc==='number') state.scale=o.sc; if(o.theme==='light') document.getElementById('appRoot').classList.add('light'); state.theme=o.theme||'dark'; if(Array.isArray(o.expr)) state.expressions=o.expr.map((it,i)=>({id:uid(), text:it.t||'', color:it.c||COLORS[i%COLORS.length], visible: it.v!==false })); if(Array.isArray(o.sliders)) state.sliders=o.sliders; }
+  function serialize(){ return { v:3, cx:state.centerX, cy:state.centerY, sc:state.scale, theme:state.theme, expr: state.expressions.map(e=>({t:e.text,c:e.color,v:!!e.visible})), sliders: state.sliders }; }
+  function deserialize(o){
+    if(!o) return;
+    if(typeof o.cx==='number') state.centerX=o.cx;
+    if(typeof o.cy==='number') state.centerY=o.cy;
+    if(typeof o.sc==='number') state.scale=o.sc;
+
+    const isLight = o.theme === 'light';
+    [document.documentElement, document.body].forEach(el => el.classList.toggle('light', isLight));
+    state.theme = isLight ? 'light' : 'dark';
+
+    if(Array.isArray(o.expr))
+      state.expressions = o.expr.map((it,i)=>({id:uid(), text:it.t||'', color:it.c||COLORS[i%COLORS.length], visible: it.v!==false }));
+    if(Array.isArray(o.sliders)) state.sliders = o.sliders;
+  }
   function persist(){ const b64=btoa(unescape(encodeURIComponent(JSON.stringify(serialize())))); const url=new URL(location.href); url.hash='#g='+b64; history.replaceState(null,'',url); }
   const persistDeb = debounce(persist, 300);
   function loadFromUrl(){ const m=(location.hash||'').match(/#g=([^&]+)/); if(!m) return false; try{ const obj=JSON.parse(decodeURIComponent(escape(atob(m[1])))); deserialize(obj); return true; }catch(e){ return false; } }
   function debounce(fn,ms){ let t; return (...a)=>{ clearTimeout(t); t=setTimeout(()=>fn(...a),ms); } }
 
   function resetView(){ state.centerX=0; state.centerY=0; state.scale=60; }
-
   function showTooltip(sx,sy,msg){ tooltip.style.left=`${sx}px`; tooltip.style.top=`${sy}px`; tooltip.textContent=msg; tooltip.style.display='block'; setTimeout(()=>tooltip.style.display='none', 1800); }
 
-  function init(){ renderExprList(); renderSliders(); if(!loadFromUrl()) persist(); resizeCanvas(); draw(); }
+  function init(){
+    renderExprList();
+    renderSliders();
+    if(!loadFromUrl()){
+      // ابدأ بالوضع الداكن افتراضياً. لو تبي الفاتح افتراضياً فعّل السطرين:
+      // document.documentElement.classList.add('light');
+      // document.body.classList.add('light');
+      persist();
+    }
+    resizeCanvas(); draw();
+  }
   init();
 })();
 </script>
