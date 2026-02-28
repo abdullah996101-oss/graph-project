@@ -11,8 +11,7 @@
       --muted:#9fb2c9; --grid-sub:#162133; --grid:#20314b; --axis:#93c5fd;
       --accent:#22d3ee; --danger:#ef4444; --ok:#22c55e; --warn:#f59e0b;
       --chip:#0b1422; --border:#172133; --shadow:0 1px 0 #0c111b, inset 0 1px 0 rgba(255,255,255,.02);
-      --sidebar-w:380px;
-      --z-drawer:20; --z-fab:15; --z-status:10;
+      --sidebar-w:380px; --z-drawer:20; --z-fab:15; --z-status:10;
     }
     :root.light{
       /* فاتح */
@@ -31,65 +30,62 @@
     }
 
     .app{display:grid; grid-template-columns: var(--sidebar-w) 1fr; height:100%}
-    .sidebar{
-      background:linear-gradient(180deg,var(--panel),var(--panel-2));
-      border-left:1px solid var(--border); padding:14px; overflow:auto;
-      position:relative;
-    }
+    .sidebar{background:linear-gradient(180deg,var(--panel),var(--panel-2)); border-left:1px solid var(--border); padding:14px; overflow:auto; position:relative}
     .header{display:grid; grid-template-columns:1fr auto; gap:8px; align-items:center; margin-bottom:8px}
     h1{font-size:18px; margin:0; font-weight:800}
     .muted{color:var(--muted); font-size:12px}
     .toolbar{display:flex; flex-wrap:wrap; gap:8px; margin:10px 0 12px}
-    .btn{
-      background:transparent; color:var(--text); border:1px solid var(--border);
-      padding:8px 10px; border-radius:10px; cursor:pointer; font-size:13px; box-shadow:var(--shadow);
-    }
+    .btn{background:transparent; color:var(--text); border:1px solid var(--border); padding:8px 10px; border-radius:10px; cursor:pointer; font-size:13px; box-shadow:var(--shadow)}
     .btn:hover{filter:brightness(1.05)}
     .btn.primary{background:var(--chip)}
     .btn.ok{color:#0f5132; background:rgba(34,197,94,.15); border-color:rgba(34,197,94,.35)}
     .btn.warn{color:#7c2d12; background:rgba(245,158,11,.15); border-color:rgba(245,158,11,.35)}
     .btn.danger{color:#7f1d1d; background:rgba(239,68,68,.15); border-color:rgba(239,68,68,.35)}
-
     .hint{font-size:12px; color:var(--muted); line-height:1.7}
     .badge{padding:2px 8px; border-radius:999px; border:1px solid var(--border); background:var(--chip)}
 
     .expr-list,.slider-list{display:grid; gap:10px}
     .card{background:var(--panel); border:1px solid var(--border); border-radius:14px; padding:10px; box-shadow:var(--shadow)}
-    .expr-card{display:grid; grid-template-columns:20px 1fr auto; gap:8px; align-items:center}
-    .swatch{width:14px; height:14px; border-radius:4px; border:2px solid rgba(0,0,0,.08)}
+
+    /* ========== تخطيط بطاقة الدالة على صفَّين ========== */
+    .expr-card{
+      display:grid;
+      grid-template-columns:28px 1fr;
+      grid-template-rows:auto auto;
+      grid-template-areas:
+        "color expr"
+        "tools tools";
+      gap:8px; align-items:center;
+    }
+    .expr-color{ grid-area: color; }
+    .expr-input{ grid-area: expr;  }
+    .expr-tools{ grid-area: tools; display:flex; flex-wrap:wrap; gap:8px; align-items:center; }
+
     .input{width:100%; background:var(--panel-2); border:1px solid var(--border); color:var(--text); padding:8px 10px; border-radius:10px; font-size:14px; outline:none}
+    .input.expr{ min-height:38px; }
+    .input.expr::placeholder{ color: var(--muted); }
+
     .mini{display:flex; gap:6px; align-items:center}
     .icon-btn{background:transparent; border:0; color:var(--muted); cursor:pointer; font-size:16px}
     .icon-btn:hover{color:var(--danger)}
+    .colorpick{appearance:none; -webkit-appearance:none; background:transparent; border:0; width:24px; height:24px; padding:0; cursor:pointer}
+
+    .lw{ width:160px; }
+    .lw-label{ font-size:12px; color:var(--muted); min-width:36px; text-align:center }
 
     .canvas-wrap{position:relative; background:radial-gradient(1200px 600px at 100% 0%, rgba(34,211,238,.04), transparent 60%)}
     canvas{display:block; width:100%; height:100%; background:transparent}
 
-    .status{
-      position:absolute; bottom:8px; left:10px; z-index:var(--z-status);
-      background:rgba(2,6,23,.55); border:1px solid var(--border); border-radius:10px;
-      padding:6px 10px; font-size:12px; color:#cbd5e1; backdrop-filter:blur(4px)
-    }
+    .status{position:absolute; bottom:8px; left:10px; z-index:var(--z-status); background:rgba(2,6,23,.55); border:1px solid var(--border); border-radius:10px; padding:6px 10px; font-size:12px; color:#cbd5e1; backdrop-filter:blur(4px)}
     .light .status{background:rgba(255,255,255,.75); color:#0f172a; border-color:#cbd5e1}
 
     .floating{position:absolute; top:8px; left:12px; display:flex; gap:6px; z-index:var(--z-fab)}
     .fab{background:var(--panel); border:1px solid var(--border); color:var(--text); padding:6px 10px; border-radius:10px; cursor:pointer; font-size:13px}
 
-    /* زر القائمة للجوال */
-    .drawer-toggle{
-      position:absolute; top:10px; right:10px; z-index:var(--z-drawer);
-      display:none; /* يُظهر على الشاشات الصغيرة */
-      background:var(--panel); border:1px solid var(--border); color:var(--text);
-      padding:6px 10px; border-radius:10px; cursor:pointer; font-size:13px;
-    }
-
-    @media (max-width: 900px){
-      .app{grid-template-columns: 1fr}
-      .sidebar{
-        position:absolute; inset:0 auto 0 0; width:min(100vw, var(--sidebar-w));
-        transform:translateX(-100%); transition:transform .25s ease; z-index:var(--z-drawer);
-        box-shadow: 2px 0 18px rgba(0,0,0,.25);
-      }
+    .drawer-toggle{position:absolute; top:10px; right:10px; z-index:20; display:none; background:var(--panel); border:1px solid var(--border); color:var(--text); padding:6px 10px; border-radius:10px; cursor:pointer; font-size:13px}
+    @media (max-width:900px){
+      .app{grid-template-columns:1fr}
+      .sidebar{position:absolute; inset:0 auto 0 0; width:min(100vw, var(--sidebar-w)); transform:translateX(-100%); transition:transform .25s ease; z-index:20; box-shadow:2px 0 18px rgba(0,0,0,.25)}
       .sidebar.open{transform:translateX(0)}
       .drawer-toggle{display:inline-block}
       .floating{left:auto; right:12px}
@@ -103,7 +99,7 @@
       <div class="header">
         <div>
           <h1>آلة رسم بياني (س/ص) – موسّعة</h1>
-          <div class="muted">يدعم: منزلقات، مجالات، ضمني/بارامتري/قطبي، تقاطعات، مماس، حفظ/استيراد، وضع فاتح/داكن</div>
+          <div class="muted">منزلقات، مجالات، ضمني/بارامتري/قطبي، تقاطعات، مماس، حفظ/استيراد، وضع فاتح/داكن</div>
         </div>
         <div class="mini">
           <button id="btnTheme" class="btn" title="الوضع الفاتح/الداكن">🌓 تبديل</button>
@@ -122,11 +118,11 @@
       <div class="hint">
         <b>صيغ مدعومة:</b>
         <div>• صريحة: <span class="badge">ص = تعبير(س)</span> أو <span class="badge">تعبير(س) = ص</span></div>
-        <div>• مجال: <span class="badge">{0 ≤ س ≤ 2π}</span> أو <span class="badge">{س ∈ [0,10]}</span></div>
-        <div>• ضمنية: <span class="badge">س^2 + ص^2 = 9</span></div>
+        <div>• خطية في ص (تُعزل تلقائيًا): <span class="badge">س + ص = ٤</span>، <span class="badge">٢س + ص = ٥</span></div>
+        <div>• ضمنية: <span class="badge">س^2 + ص^2 = ٩</span>، <span class="badge">س*ص = ١</span></div>
         <div>• بارامترية: <span class="badge">س(t)=cos(t), ص(t)=sin(t) {0 ≤ t ≤ 2π}</span></div>
         <div>• قطبية: <span class="badge">r(θ)=1+cos(θ) {0 ≤ θ ≤ 2π}</span></div>
-        <div>• منزلقات: عرّف معاملات مثل <span class="badge">a</span>, <span class="badge">b</span> ثم أضِف منزلقًا لها.</div>
+        <div>• منزلقات: <span class="badge">a, b, ...</span> تُستخدم داخل الدوال.</div>
         دوال عربية: <span class="badge">جا</span>، <span class="badge">جتا</span>، <span class="badge">ظا</span>، <span class="badge">جذر</span>، <span class="badge">لن</span>، <span class="badge">لو</span>.
       </div>
 
@@ -134,7 +130,7 @@
         <h3>الدوال</h3>
         <div id="exprList" class="expr-list"></div>
         <div class="mini" style="margin-top:6px; color:var(--muted); font-size:12px">
-          للتجريب: اضغط <b>Alt</b> ثم انقر على المنحنى لعرض <b>مماس</b> والميل عند أقرب نقطة.
+          للتجريب: اضغط <b>Alt</b> ثم انقر على منحنى لعرض <b>مماس</b> والميل عند أقرب نقطة.
         </div>
       </div>
 
@@ -159,164 +155,125 @@
 
 <script>
 (() => {
-  /* =================== أدوات مساعدة =================== */
+  /* ---------- أدوات ---------- */
   const AR_DIGITS = "٠١٢٣٤٥٦٧٨٩"; const EN_DIGITS = "0123456789";
-  const toArabicDigits = s => String(s).replace(/[0-9]/g, d => AR_DIGITS[d]);
+  const toArabicDigits  = s => String(s).replace(/[0-9]/g, d => AR_DIGITS[d]);
   const toEnglishDigits = s => String(s).replace(/[٠-٩]/g, ch => EN_DIGITS[AR_DIGITS.indexOf(ch)]).replace(/،/g, ',');
   const cssVar = name => getComputedStyle(document.documentElement).getPropertyValue(name);
+  const uid   = () => Math.random().toString(36).slice(2,9);
 
-  /* ====== تحويل أسماء الدوال بالعربية إلى Math ====== */
+  /* ---------- دوال عربية -> Math ---------- */
   const arabicPairs = [
     [/\bجا\b/g,'sin'], [/\bجتا\b/g,'cos'], [/\bظا\b/g,'tan'],
     [/\bجذر\b/g,'sqrt'], [/\bقيمة_?مطلقة\b/g,'abs'],
-    [/\bلو\b/g,'log'], [/\bلن\b/g,'ln']
+    [/\bلو\b/g,'log'],   [/\bلن\b/g,'ln']
   ];
 
-  /* =================== حالة التطبيق =================== */
-  const canvas = document.getElementById('canvas');
-  const ctx = canvas.getContext('2d');
+  /* ---------- الحالة ---------- */
+  const canvas   = document.getElementById('canvas');
+  const ctx      = canvas.getContext('2d');
   const statusEl = document.getElementById('status');
-  const tooltip = document.getElementById('tooltip');
-  const exprListEl = document.getElementById('exprList');
+  const tooltip  = document.getElementById('tooltip');
+  const exprListEl   = document.getElementById('exprList');
   const sliderListEl = document.getElementById('sliderList');
+  const sidebarEl    = document.getElementById('sidebar');
 
   const COLORS = ['#22d3ee','#a78bfa','#f472b6','#34d399','#f59e0b','#60a5fa','#ef4444','#10b981','#eab308','#06b6d4'];
-  const uid = () => Math.random().toString(36).slice(2,9);
 
   const state = {
-    centerX: 0, centerY: 0, scale: 60,
+    centerX:0, centerY:0, scale:60,
     dragging:false, dragStart:{x:0,y:0,cx:0,cy:0},
     mouse:{x:0,y:0,wx:0,wy:0},
-    theme: 'dark',
-    expressions: [ { id: uid(), color: COLORS[0], text: 'ص = س^2', visible: true } ],
-    sliders: [],
-    polylines: [],
-    touch: {
-      active:false, lastDist:0, lastMid:null, lastTapTime:0, fingerCount:0
-    }
+    theme:'dark',
+    expressions:[
+      { id: uid(), color: COLORS[0], width: 2, text:'ص = س^2', visible:true }
+    ],
+    sliders:[],
+    polylines:[],
+    touch:{active:false, lastDist:0, lastTapTime:0, fingerCount:0}
   };
 
-  /* =================== تطبيع النص + ضرب ضمني =================== */
+  /* ---------- تطبيع + ضرب ضمني ---------- */
   function preprocessBasic(s){
-    s = toEnglishDigits(String(s));
+    s = toEnglishDigits(String(s))
+      .replace(/[سx]/gi,'x').replace(/[صy]/gi,'y').replace(/[θϴ]/g,'theta')
+      .replace(/π|باي/gi,'PI').replace(/هـ/g,'E')
+      .replace(/[÷]/g,'/').replace(/[×]/g,'*').replace(/\^/g,'**');
 
+    arabicPairs.forEach(([re,rep]) => s = s.replace(re, rep));
+    s = s.replace(/\bln\(/g,'log(');
+
+    const FN='(sin|cos|tan|sqrt|abs|log)';
     s = s
-      .replace(/[سx]/gi, 'x')
-      .replace(/[صy]/gi, 'y')
-      .replace(/[θϴ]/g, 'theta')
-      .replace(/π|باي/gi, 'PI')
-      .replace(/هـ/g, 'E')
-      .replace(/[÷]/g, '/')
-      .replace(/[×]/g, '*')
-      .replace(/\^/g, '**');
+      .replace(/(\d)\s*(x|y|theta|t|PI|E|\()/gi,'$1*$2')
+      .replace(/(x|y|theta|t|PI|E|\))\s*(\d|\()/gi,'$1*$2')
+      .replace(new RegExp(`(\\d|x|y|theta|t|PI|E)\\s*${FN}`,'gi'),'$1*$2')
+      .replace(new RegExp(`\\)\\s*${FN}`,'gi'),')*$1')
+      .replace(/\)\s*\(/g,')*(')
+      .replace(/(x|y|theta|t)\s*(PI|E)/gi,'$1*$2')
+      .replace(/(PI|E)\s*(x|y|theta|t)/gi,'$1*$2');
 
-    arabicPairs.forEach(([re, rep]) => s = s.replace(re, rep));
-    s = s.replace(/\bln\(/g, 'log(');
-
-    // الضرب الضمني الأكثر شيوعًا
-    const FN = '(sin|cos|tan|sqrt|abs|log)';
-    s = s.replace(/(\d)\s*(x|y|theta|t|PI|E|\()/gi, '$1*$2');          // رقم قبل متغير/قوس
-    s = s.replace(/(x|y|theta|t|PI|E|\))\s*(\d|\()/gi, '$1*$2');        // متغير/قوس قبل رقم/قوس
-    s = s.replace(new RegExp(`(\\d|x|y|theta|t|PI|E)\\s*${FN}`, 'gi'), '$1*$2'); // قبل دالة
-    s = s.replace(new RegExp(`\\)\\s*${FN}`, 'gi'), ')*$1');            // ) قبل دالة
-    s = s.replace(/\)\s*\(/g, ')*(');                                   // )(
-    s = s.replace(/(x|y|theta|t)\s*(PI|E)/gi, '$1*$2');                 // xPI
-    s = s.replace(/(PI|E)\s*(x|y|theta|t)/gi, '$1*$2');                 // PIx
-
-    return s.replace(/\s+/g, ' ').trim();
+    return s.replace(/\s+/g,' ').trim();
   }
-
   const containsY = s => /\by\b/i.test(String(s));
-  const sideIsY = raw => /^y$/i.test(preprocessBasic(raw).trim());
+  const sideIsY   = raw => /^y$/i.test(preprocessBasic(raw).trim());
 
-  /* ============ محاولة عزل y جبريًا إن كانت خطية ============ */
+  /* ---------- عزل y (خطي) ---------- */
   function tryLinearSolveForY(lhsRaw, rhsRaw){
-    const L0 = preprocessBasic(lhsRaw);
-    const R0 = preprocessBasic(rhsRaw);
-
+    const L0 = preprocessBasic(lhsRaw), R0 = preprocessBasic(rhsRaw);
     function solve(side, other){
-      if (containsY(other)) return null; // الطرف المقابل يجب ألا يحوي y
+      if (containsY(other)) return null;
       let m;
-
-      // a(x)*y ± b(x)  => y = (other ∓ b)/a
       m = side.match(/^(.+?)\*?y\s*([+\-])\s*(.+)$/i);
       if (m && !containsY(m[1]) && !containsY(m[3])) {
         const a=m[1].trim(), op=m[2], b=m[3].trim();
-        const num = op==='+' ? `(${other})-(${b})` : `(${other})+(${b})`;
-        return `(${num})/(${a})`;
+        const numer=(op==='+')?`(${other})-(${b})`:`(${other})+(${b})`;
+        return `(${numer})/(${a})`;
       }
-      // y ± b(x)       => y = other ∓ b
       m = side.match(/^y\s*([+\-])\s*(.+)$/i);
       if (m && !containsY(m[2])) {
         const op=m[1], b=m[2].trim();
-        return op==='+' ? `(${other})-(${b})` : `(${other})+(${b})`;
+        return (op==='+')?`(${other})-(${b})`:`(${other})+(${b})`;
       }
-      // a(x)*y         => y = other / a
       m = side.match(/^(.+?)\*?y$/i);
-      if (m && !containsY(m[1])) {
-        const a=m[1].trim();
-        return `(${other})/(${a})`;
-      }
-      // y فقط          => y = other
+      if (m && !containsY(m[1])) return `(${other})/(${m[1].trim()})`;
       if (/^y$/i.test(side)) return `${other}`;
-
-      // other ± y      => y = RHS - other   أو  y = other - RHS
       m = side.match(/^(.+)\s*([+\-])\s*y$/i);
       if (m && !containsY(m[1])) {
-        const otherOnSide = m[1].trim(), op=m[2];
-        return (op === '+') ? `(${other})-(${otherOnSide})` : `(${otherOnSide})-(${other})`;
+        const otherOnSide=m[1].trim(), op=m[2];
+        return (op==='+')?`(${other})-(${otherOnSide})`:`(${otherOnSide})-(${other})`;
       }
-      // other ± a*y    => y = (RHS - other)/a أو y = (other - RHS)/a
       m = side.match(/^(.+)\s*([+\-])\s*(.+?)\*?y$/i);
       if (m && !containsY(m[1]) && !containsY(m[3])) {
-        const otherOnSide = m[1].trim(), op=m[2], a=m[3].trim();
-        return (op === '+') ? `((${other})-(${otherOnSide}))/(${a})`
-                            : `((${otherOnSide})-(${other}))/(${a})`;
+        const otherOnSide=m[1].trim(), op=m[2], a=m[3].trim();
+        return (op==='+')?`((${other})-(${otherOnSide}))/(${a})`:`((${otherOnSide})-(${other}))/(${a})`;
       }
-      // -y ± b(x) أو other ± -y (حالات الإشارة السالبة أمام y)
-      m = side.match(/^-\s*y\s*([+\-])\s*(.+)$/i);
-      if (m && !containsY(m[2])) {
-        const op=m[1], b=m[2].trim();
-        // -y + b = other  => y = b - other
-        // -y - b = other  => y = -b - other
-        return (op === '+') ? `(${b})-(${other})` : `(-(${b}))-(${other})`;
-      }
-      m = side.match(/^(.+)\s*([+\-])\s*-\s*y$/i);
-      if (m && !containsY(m[1])) {
-        const otherOnSide=m[1].trim(), op=m[2];
-        // other - (-y) = other + y = other => y = other - otherOnSide
-        // other + (-y) = other - y = other => y = otherOnSide - other
-        return (op === '+') ? `(${otherOnSide})-(${other})` : `(${other})-(${otherOnSide})`;
-      }
-
       return null;
     }
-
     let js = solve(R0, L0); if (js) return js;
-    js = solve(L0, R0); if (js) return js;
+    js = solve(L0, R0);    if (js) return js;
     return null;
   }
 
-  /* ============ مجال الإدخال { ... } ============ */
+  /* ---------- مجال {} ---------- */
   function extractDomain(raw){
     const m = raw.match(/\{([^}]*)\}/);
     if(!m) return {text: raw, domain: null};
     const inside = preprocessBasic(m[1]);
-    let dom = {xmin:null,xmax:null,ymin:null,ymax:null,tmin:null,tmax:null,thmin:null,thmax:null};
-    let r;
-    if(r = inside.match(/([\-+*/().,x0-9EPI ]*?)<=?x<=?([\-+*/().,x0-9EPI ]*?)/i)){ dom.xmin=r[1].trim(); dom.xmax=r[2].trim(); }
-    else if(r = inside.match(/x\s*in\s*\[([^,]+),([^\]]+)\]/i)){ dom.xmin=r[1].trim(); dom.xmax=r[2].trim(); }
-    if(r = inside.match(/([\-+*/().,x0-9EPI ]*?)<=?y<=?([\-+*/().,x0-9EPI ]*?)/i)){ dom.ymin=r[1].trim(); dom.ymax=r[2].trim(); }
-    else if(r = inside.match(/y\s*in\s*\[([^,]+),([^\]]+)\]/i)){ dom.ymin=r[1].trim(); dom.ymax=r[2].trim(); }
-    if(r = inside.match(/([\-+*/().,t0-9EPI ]*?)<=?t<=?([\-+*/().,t0-9EPI ]*?)/i)){ dom.tmin=r[1].trim(); dom.tmax=r[2].trim(); }
-    else if(r = inside.match(/t\s*in\s*\[([^,]+),([^\]]+)\]/i)){ dom.tmin=r[1].trim(); dom.tmax=r[2].trim(); }
-    if(r = inside.match(/([\-+*/().,0-9EPI ]*?)<=?(theta|ϴ|θ)<=?([\-+*/().,0-9EPI ]*?)/i)){ dom.thmin=r[1].trim(); dom.thmax=r[3].trim(); }
-    else if(r = inside.match(/(theta|ϴ|θ)\s*in\s*\[([^,]+),([^\]]+)\]/i)){ dom.thmin=r[2].trim(); dom.thmax=r[3].trim(); }
+    let dom={xmin:null,xmax:null,ymin:null,ymax:null,tmin:null,tmax:null,thmin:null,thmax:null}, r;
+    if(r=inside.match(/([\-+*/().,x0-9EPI ]*?)<=?x<=?([\-+*/().,x0-9EPI ]*?)/i)){ dom.xmin=r[1].trim(); dom.xmax=r[2].trim(); }
+    else if(r=inside.match(/x\s*in\s*\[([^,]+),([^\]]+)\]/i)){ dom.xmin=r[1].trim(); dom.xmax=r[2].trim(); }
+    if(r=inside.match(/([\-+*/().,x0-9EPI ]*?)<=?y<=?([\-+*/().,x0-9EPI ]*?)/i)){ dom.ymin=r[1].trim(); dom.ymax=r[2].trim(); }
+    else if(r=inside.match(/y\s*in\s*\[([^,]+),([^\]]+)\]/i)){ dom.ymin=r[1].trim(); dom.ymax=r[2].trim(); }
+    if(r=inside.match(/([\-+*/().,t0-9EPI ]*?)<=?t<=?([\-+*/().,t0-9EPI ]*?)/i)){ dom.tmin=r[1].trim(); dom.tmax=r[2].trim(); }
+    else if(r=inside.match(/t\s*in\s*\[([^,]+),([^\]]+)\]/i)){ dom.tmin=r[1].trim(); dom.tmax=r[2].trim(); }
+    if(r=inside.match(/([\-+*/().,0-9EPI ]*?)<=?(theta|ϴ|θ)<=?([\-+*/().,0-9EPI ]*?)/i)){ dom.thmin=r[1].trim(); dom.thmax=r[3].trim(); }
+    else if(r=inside.match(/(theta|ϴ|θ)\s*in\s*\[([^,]+),([^\]]+)\]/i)){ dom.thmin=r[2].trim(); dom.thmax=r[3].trim(); }
     const cleaned = raw.replace(/\{[^}]*\}/,'').trim();
     return {text: cleaned, domain: dom};
   }
 
-  /* ============ تحديد نوع الإدخال ============ */
+  /* ---------- تحديد النوع ---------- */
   function normalizeExpr(raw){
     if(!raw) return {kind:'none'};
     const {text, domain} = extractDomain(raw);
@@ -327,93 +284,62 @@
       const [lhsRaw, rhsRaw] = s.split('=');
       const lhs = preprocessBasic(lhsRaw), rhs = preprocessBasic(rhsRaw);
 
-      // بارامترية x(t)=..., y(t)=...
       if (/x\(t\)\s*=/.test(lhs+rhs) && /y\(t\)\s*=/.test(lhs+rhs)) {
         const pair = preprocessBasic(s);
         const mx = pair.match(/x\(t\)\s*=\s*([^,;]+)[,;]/i);
         const my = pair.match(/y\(t\)\s*=\s*([^,;]+)/i);
         if (mx && my) return { kind:'param', xt: mx[1].trim(), yt: my[1].trim(), domain };
       }
-      // قطبي r(θ)=...
       if (/r\((theta|ϴ|θ)\)\s*=/.test(lhs+rhs)) {
         const all = preprocessBasic(s);
         const mr = all.match(/r\((?:theta|ϴ|θ)\)\s*=\s*(.+)/i);
         if (mr) return { kind:'polar', rth: mr[1].trim(), domain };
       }
-      // صريحة مباشرة
       if (sideIsY(lhs)) return { kind:'explicit', js: preprocessBasic(rhsRaw), domain };
       if (sideIsY(rhs)) return { kind:'explicit', js: preprocessBasic(lhsRaw), domain };
 
-      // عزل خطي تلقائي
       const solved = tryLinearSolveForY(lhsRaw, rhsRaw);
       if (solved) return { kind:'explicit', js: preprocessBasic(solved), domain };
 
-      // ضمنية
       return { kind:'implicit', eq: preprocessBasic(s), domain };
     }
-    // بدون مساواة → y = expr(x)
     return { kind:'explicit', js: preprocessBasic(s), domain };
   }
 
-  /* ============ التقييم في نطاق Math + منزلقات ============ */
+  /* ---------- تقييم ---------- */
   const isSafe = expr => /^[0-9+\-*/().,\sxa-zA-Z_]*\**[0-9+\-*/().,\sxa-zA-Z_]*$/.test(expr);
-
   function buildScope(vars){
     const scope = Object.create(Math);
     scope.log10 = (v)=>Math.log10(v);
     scope.PI = Math.PI; scope.E = Math.E;
-    for(const sl of state.sliders){ scope[sl.name] = sl.value; }
+    for(const sl of state.sliders) scope[sl.name] = sl.value;
     if(vars) for(const k of Object.keys(vars)) scope[k] = vars[k];
     return scope;
   }
+  function makeFn1(js){ if(!js||!isSafe(js)) throw new Error('تعبير غير صالح'); return Function('x', `with(this){return (${js});}`).bind(buildScope()); }
+  function makeFn2(js){ if(!js||!isSafe(js)) throw new Error('تعبير غير صالح'); return Function('x','y', `with(this){return (${js});}`).bind(buildScope()); }
+  function evalInScope(expr, extra){ const s=preprocessBasic(expr); return Function(`with(this){return (${s});}`).bind(buildScope(extra))(); }
 
-  function makeFn1(js){
-    if(!js || !isSafe(js)) throw new Error('تعبير غير صالح');
-    const src = `with(this){ return (${js}); }`;
-    return Function('x', src).bind(buildScope());
-  }
-  function makeFn2(js){
-    if(!js || !isSafe(js)) throw new Error('تعبير غير صالح');
-    const src = `with(this){ return (${js}); }`;
-    return Function('x','y', src).bind(buildScope());
-  }
-  function evalInScope(expr, extra){
-    const s = preprocessBasic(expr);
-    const fn = Function(`with(this){ return (${s}); }`).bind(buildScope(extra));
-    return fn();
-  }
-
-  /* =================== تحويل الإحداثيات =================== */
-  function worldToScreen(x,y){
-    const r = devicePixelRatio||1, w=canvas.width, h=canvas.height;
-    return { x:(w/2)+(x-state.centerX)*state.scale*r, y:(h/2)-(y-state.centerY)*state.scale*r };
-  }
-  function screenToWorld(sx,sy){
-    const r = devicePixelRatio||1, w=canvas.width, h=canvas.height;
-    return { x:(sx-w/2)/(state.scale*r)+state.centerX, y:-(sy-h/2)/(state.scale*r)+state.centerY };
-  }
-
-  function resizeCanvas(){
-    const r = devicePixelRatio||1; const rect = canvas.getBoundingClientRect();
-    canvas.width = Math.max(1, Math.floor(rect.width*r));
-    canvas.height = Math.max(1, Math.floor(rect.height*r));
-    draw();
-  }
+  /* ---------- تحويل إحداثيات ---------- */
+  function worldToScreen(x,y){ const r=devicePixelRatio||1,w=canvas.width,h=canvas.height; return { x:(w/2)+(x-state.centerX)*state.scale*r, y:(h/2)-(y-state.centerY)*state.scale*r }; }
+  function screenToWorld(sx,sy){ const r=devicePixelRatio||1,w=canvas.width,h=canvas.height; return { x:(sx-w/2)/(state.scale*r)+state.centerX, y:-(sy-h/2)/(state.scale*r)+state.centerY }; }
+  function resizeCanvas(){ const r=devicePixelRatio||1,rect=canvas.getBoundingClientRect(); canvas.width=Math.max(1,Math.floor(rect.width*r)); canvas.height=Math.max(1,Math.floor(rect.height*r)); draw(); }
   new ResizeObserver(resizeCanvas).observe(document.querySelector('.canvas-wrap'));
 
-  /* =================== شبكة ومحاور =================== */
-  function niceStep(ppu){
-    const target=110; const units=target/ppu; const p=Math.pow(10, Math.floor(Math.log10(units)));
-    const c=[1,2,5,10].map(v=>v*p); let best=c[0]; for(const v of c) if(Math.abs(v-units)<Math.abs(best-units)) best=v; return best;
-  }
-
+  /* ---------- شبكة ومحاور (تم إصلاح حدود المشهد) ---------- */
+  function niceStep(ppu){ const target=110, units=target/ppu, p=Math.pow(10, Math.floor(Math.log10(units))); const c=[1,2,5,10].map(v=>v*p); let best=c[0]; for(const v of c) if(Math.abs(v-units)<Math.abs(best-units)) best=v; return best; }
   function drawGrid(){
     const r=devicePixelRatio||1, w=canvas.width, h=canvas.height;
-    ctx.clearRect(0,0,w,h);
-    ctx.fillStyle = cssVar('--bg'); ctx.fillRect(0,0,w,h);
 
-    const step = niceStep(state.scale);
-    const sub = step/5; const tl = screenToWorld(0,0), br = screenToWorld(w,h);
+    ctx.clearRect(0,0,w,h);
+    ctx.fillStyle = cssVar('--bg');
+    ctx.fillRect(0,0,w,h);
+
+    const step = niceStep(state.scale), sub = step/5;
+
+    // ✅ الزاويتان الصحيحـتان: أعلى يسار وأدنى يمين
+    const tl = screenToWorld(0, 0);
+    const br = screenToWorld(w, h);
 
     // فرعية
     ctx.lineWidth=1; ctx.strokeStyle=cssVar('--grid-sub'); ctx.beginPath();
@@ -429,49 +355,57 @@
 
     // محاور
     ctx.strokeStyle=cssVar('--axis'); ctx.lineWidth=1.5; ctx.beginPath();
-    const sx0=worldToScreen(0,0).x, sy0=worldToScreen(0,0).y; ctx.moveTo(sx0+.5,0); ctx.lineTo(sx0+.5,h); ctx.moveTo(0,sy0+.5); ctx.lineTo(w,sy0+.5); ctx.stroke();
+    const sx0=worldToScreen(0,0).x, sy0=worldToScreen(0,0).y;
+    ctx.moveTo(sx0+.5,0); ctx.lineTo(sx0+.5,h);
+    ctx.moveTo(0,sy0+.5); ctx.lineTo(w,sy0+.5);
+    ctx.stroke();
 
-    // تسميات وأرقام
+    // تسميات
     ctx.fillStyle = cssVar('--axis');
     ctx.font = `${12*r}px system-ui, -apple-system, Segoe UI, Noto Sans Arabic, Arial`;
-    ctx.textAlign='right'; ctx.textBaseline='top'; ctx.fillText('س', Math.min(w-6,w-6), sy0 + 6);
-    ctx.textAlign='left'; ctx.textBaseline='bottom'; ctx.fillText('ص', sx0 + 6, Math.max(12,12));
+    ctx.textAlign='right'; ctx.textBaseline='top';    ctx.fillText('س', Math.min(w-6,w-6), sy0 + 6);
+    ctx.textAlign='left';  ctx.textBaseline='bottom'; ctx.fillText('ص', sx0 + 6, Math.max(12,12));
 
-    ctx.fillStyle=cssVar('--muted');
-    ctx.textAlign='right'; ctx.textBaseline='top';
-    for(let x=Math.floor(tl.x/step)*step; x<=br.x; x+=step){ if(Math.abs(x)<1e-12) continue; const p=worldToScreen(x,0); ctx.fillText(toArabicDigits(x.toFixed(2).replace(/\.00$/,'')), p.x-4, sy0+6); }
-    ctx.textAlign='left'; ctx.textBaseline='bottom';
-    for(let y=Math.floor(br.y/step)*step; y<=tl.y; y+=step){ if(Math.abs(y)<1e-12) continue; const p=worldToScreen(0,y); ctx.fillText(toArabicDigits(y.toFixed(2).replace(/\.00$/,'')), sx0+6, p.y-2); }
+    // أرقام س (تحت المحور)
+    ctx.fillStyle=cssVar('--muted'); ctx.textAlign='right'; ctx.textBaseline='top';
+    for(let x=Math.floor(tl.x/step)*step; x<=br.x; x+=step){
+      if(Math.abs(x)<1e-12) continue;
+      const p=worldToScreen(x,0); ctx.fillText(toArabicDigits(x.toFixed(2).replace(/\.00$/,'')), p.x-4, sy0+6);
+    }
+    // أرقام ص (على يسار محور ص)
+    ctx.textAlign='right'; ctx.textBaseline='bottom';
+    for(let y=Math.floor(br.y/step)*step; y<=tl.y; y+=step){
+      if(Math.abs(y)<1e-12) continue;
+      const p=worldToScreen(0,y); ctx.fillText(toArabicDigits(y.toFixed(2).replace(/\.00$/,'')), sx0 - 6, p.y - 2);
+    }
   }
 
-  /* =================== رسم المنحنيات =================== */
-  function adaptiveSampleX(f, left, right){
-    const pts=[]; const maxDepth=12; const eps=1e-2; const N0=25;
-    function rec(a,b,ya,yb,depth){
-      const m=(a+b)/2; let ym=f(m); if(!isFinite(ya)) ya=f(a); if(!isFinite(yb)) yb=f(b);
-      if(!isFinite(ym) || depth>=maxDepth){ pts.push([a,ya],[b,yb]); return; }
+  /* ---------- رسم ---------- */
+  function adaptiveSampleX(f,left,right){
+    const pts=[], maxDepth=12, eps=1e-2, N0=25;
+    function rec(a,b,ya,yb,d){ const m=(a+b)/2; let ym=f(m); if(!isFinite(ya)) ya=f(a); if(!isFinite(yb)) yb=f(b);
+      if(!isFinite(ym)||d>=maxDepth){ pts.push([a,ya],[b,yb]); return; }
       const ylin=(ya+yb)/2; if(Math.abs(ym-ylin)<eps*(1+Math.abs(ym))){ pts.push([a,ya],[b,yb]); return; }
-      rec(a,m,ya,ym,depth+1); rec(m,b,ym,yb,depth+1);
+      rec(a,m,ya,ym,d+1); rec(m,b,ym,yb,d+1);
     }
     let yL=f(left), yR=f(right);
-    if(!isFinite(yL)||!isFinite(yR)){
-      const dx=(right-left)/N0; let x=left; let lastX=null,lastY=null;
-      for(let i=0;i<=N0;i++,x+=dx){ const y=f(x); if(isFinite(y)){ if(lastX!==null){ rec(lastX,x,lastY,y,0); } lastX=x; lastY=y; } }
-    } else rec(left,right,yL,yR,0);
-    pts.sort((a,b)=>a[0]-b[0]); const out=[]; let prev=null;
-    for(const p of pts){ if(!prev || p[0]!==prev[0]) out.push(p); prev=p; }
-    return out;
+    if(!isFinite(yL)||!isFinite(yR)){ const dx=(right-left)/N0; let x=left, lx=null, ly=null; for(let i=0;i<=N0;i++,x+=dx){ const y=f(x); if(isFinite(y)){ if(lx!==null){ rec(lx,x,ly,y,0); } lx=x; ly=y; } } }
+    else rec(left,right,yL,yR,0);
+    pts.sort((a,b)=>a[0]-b[0]); const out=[]; let prev=null; for(const p of pts){ if(!prev || p[0]!==prev[0]) out.push(p); prev=p; } return out;
   }
 
   function drawPolylines(){
     state.polylines.length=0;
-    const r=devicePixelRatio||1; const w=canvas.width; const viewL=screenToWorld(0,0).x, viewR=screenToWorld(w,0).x;
+    const r=devicePixelRatio||1, w=canvas.width, viewL=screenToWorld(0,0).x, viewR=screenToWorld(w,0).x;
+
     for(const [i,ex] of state.expressions.entries()){
       if(!ex.visible) continue;
       const spec = normalizeExpr(ex.text);
-      ctx.lineWidth=2*r; ctx.strokeStyle=ex.color||COLORS[i%COLORS.length];
-      ctx.beginPath(); let pen=false;
-      let poly=[];
+      const color = ex.color || COLORS[i%COLORS.length];
+      const width = Math.max(0.5, Number(ex.width||2)) * r;
+
+      let poly=[]; ctx.strokeStyle = color;
+
       try{
         if(spec.kind==='explicit'){
           const f = makeFn1(spec.js);
@@ -479,60 +413,63 @@
           if(spec.domain && spec.domain.xmin) L = evalInScope(spec.domain.xmin);
           if(spec.domain && spec.domain.xmax) R = evalInScope(spec.domain.xmax);
           const pts = adaptiveSampleX(f, L, R);
-          for(const [x,y] of pts){
-            const p=worldToScreen(x,y);
-            if(!isFinite(p.x)||!isFinite(p.y)) { pen=false; continue; }
-            if(!pen){ ctx.moveTo(p.x,p.y); pen=true; } else ctx.lineTo(p.x,p.y);
-            poly.push([x,y]);
-          }
+          ctx.lineWidth = width; ctx.beginPath(); let pen=false;
+          for(const [x,y] of pts){ const p=worldToScreen(x,y); if(!isFinite(p.x)||!isFinite(p.y)){ pen=false; continue; } if(!pen){ ctx.moveTo(p.x,p.y); pen=true; } else ctx.lineTo(p.x,p.y); poly.push([x,y]); }
           ctx.stroke();
         }
         else if(spec.kind==='implicit'){
           const tl=screenToWorld(0,0), br=screenToWorld(canvas.width, canvas.height);
-          const nx=60, ny=40; const dx=(br.x-tl.x)/nx, dy=(tl.y-br.y)/ny;
-          const F = (()=>{ const eq = spec.eq.replace('=','-(')+')'; return makeFn2(eq); })();
+          const nx=60, ny=40, dx=(br.x-tl.x)/nx, dy=(tl.y-br.y)/ny;
+          const F = (()=>{ const eq=spec.eq.replace('=','-(')+')'; return makeFn2(eq); })();
           function val(x,y){ const v=F(x,y); return isFinite(v)?v:NaN; }
-          ctx.strokeStyle=ex.color||COLORS[i%COLORS.length]; ctx.lineWidth=2*r;
-          for(let iy=0; iy<ny; iy++){
-            for(let ix=0; ix<nx; ix++){
-              const x0=tl.x+ix*dx, y0=tl.y-iy*dy; const x1=x0+dx, y1=y0-dy;
+          ctx.lineWidth = width;
+          for(let iy=0;iy<ny;iy++){
+            for(let ix=0;ix<nx;ix++){
+              const x0=tl.x+ix*dx, y0=tl.y-iy*dy, x1=x0+dx, y1=y0-dy;
               const v00=val(x0,y0), v10=val(x1,y0), v01=val(x0,y1), v11=val(x1,y1);
-              function lerp(a,b,ta,tb){ const t=ta/(ta-tb); return a + (b-a)*t; }
               const edges=[];
-              if(isFinite(v00)&&isFinite(v10) && (v00>0)!=(v10>0)){ edges.push([lerp(x0,x1,v00,v10), y0]); }
-              if(isFinite(v10)&&isFinite(v11) && (v10>0)!=(v11>0)){ edges.push([x1, lerp(y0,y1,v10,v11)]); }
-              if(isFinite(v01)&&isFinite(v11) && (v01>0)!=(v11>0)){ edges.push([lerp(x0,x1,v01,v11), y1]); }
-              if(isFinite(v00)&&isFinite(v01) && (v00>0)!=(v01>0)){ edges.push([x0, lerp(y0,y1,v00,v01)]); }
-              if(edges.length===2){
-                const p0=worldToScreen(edges[0][0], edges[0][1]);
-                const p1=worldToScreen(edges[1][0], edges[1][1]);
-                ctx.beginPath(); ctx.moveTo(p0.x,p0.y); ctx.lineTo(p1.x,p1.y); ctx.stroke();
-                poly.push(edges[0], edges[1]);
-              }
+              function lerp(a,b,ta,tb){ const t=ta/(ta-tb); return a+(b-a)*t; }
+              if(isFinite(v00)&&isFinite(v10)&&(v00>0)!=(v10>0)) edges.push([lerp(x0,x1,v00,v10),y0]);
+              if(isFinite(v10)&&isFinite(v11)&&(v10>0)!=(v11>0)) edges.push([x1,lerp(y0,y1,v10,v11)]);
+              if(isFinite(v01)&&isFinite(v11)&&(v01>0)!=(v11>0)) edges.push([lerp(x0,x1,v01,v11),y1]);
+              if(isFinite(v00)&&isFinite(v01)&&(v00>0)!=(v01>0)) edges.push([x0,lerp(y0,y1,v00,v01)]);
+              if(edges.length===2){ const p0=worldToScreen(edges[0][0],edges[0][1]), p1=worldToScreen(edges[1][0],edges[1][1]); ctx.beginPath(); ctx.moveTo(p0.x,p0.y); ctx.lineTo(p1.x,p1.y); ctx.stroke(); poly.push(edges[0],edges[1]); }
             }
           }
         }
         else if(spec.kind==='param'){
           const xt = Function('t', `with(this){return (${spec.xt});}`).bind(buildScope());
           const yt = Function('t', `with(this){return (${spec.yt});}`).bind(buildScope());
-          let t0=0, t1=2*Math.PI; if(spec.domain){ if(spec.domain.tmin) t0=evalInScope(spec.domain.tmin,{t:0}); if(spec.domain.tmax) t1=evalInScope(spec.domain.tmax,{t:0}); }
-          const steps = 800; const dt=(t1-t0)/steps;
-          for(let i=0;i<=steps;i++){ const t=t0+i*dt; const x=xt(t), y=yt(t); const p=worldToScreen(x,y); if(i===0) ctx.moveTo(p.x,p.y); else ctx.lineTo(p.x,p.y); poly.push([x,y]); }
+          let t0=0,t1=2*Math.PI; if(spec.domain){ if(spec.domain.tmin) t0=evalInScope(spec.domain.tmin,{t:0}); if(spec.domain.tmax) t1=evalInScope(spec.domain.tmax,{t:0}); }
+          const steps=800, dt=(t1-t0)/steps; ctx.lineWidth=width; ctx.beginPath();
+          for(let i=0;i<=steps;i++){ const t=t0+i*dt, x=xt(t), y=yt(t), p=worldToScreen(x,y); if(i===0) ctx.moveTo(p.x,p.y); else ctx.lineTo(p.x,p.y); poly.push([x,y]); }
           ctx.stroke();
         }
         else if(spec.kind==='polar'){
           const fr = Function('theta', `with(this){return (${spec.rth});}`).bind(buildScope());
           let th0=0, th1=2*Math.PI; if(spec.domain){ if(spec.domain.thmin) th0=evalInScope(spec.domain.thmin,{theta:0}); if(spec.domain.thmax) th1=evalInScope(spec.domain.thmax,{theta:0}); }
-          const steps = 800; const d=(th1-th0)/steps;
-          for(let i=0;i<=steps;i++){ const th=th0+i*d; const r0=fr(th); const x=r0*Math.cos(th), y=r0*Math.sin(th); const p=worldToScreen(x,y); if(i===0) ctx.moveTo(p.x,p.y); else ctx.lineTo(p.x,p.y); poly.push([x,y]); }
+          const steps=800, d=(th1-th0)/steps; ctx.lineWidth=width; ctx.beginPath();
+          for(let i=0;i<=steps;i++){ const th=th0+i*d, r0=fr(th), x=r0*Math.cos(th), y=r0*Math.sin(th), p=worldToScreen(x,y); if(i===0) ctx.moveTo(p.x,p.y); else ctx.lineTo(p.x,p.y); poly.push([x,y]); }
           ctx.stroke();
         }
-      } catch(err){ markExprError(ex.id, err.message); continue; }
-      clearExprError(ex.id); state.polylines.push({id:ex.id,color:ctx.strokeStyle,points:poly});
+      }catch(err){ markExprError(ex.id, err.message); continue; }
+
+      clearExprError(ex.id);
+      state.polylines.push({id:ex.id,color,points:poly});
     }
   }
 
-  /* =================== تقاطعات تقريبية =================== */
+  /* ---------- تقاطعات ---------- */
+  function segInter(p,q,r,s){
+    function cross(a,b,c){ return (b[0]-a[0])*(c[1]-a[1]) - (b[1]-a[1])*(c[0]-a[0]); }
+    const d=cross(p,q,r), e=cross(p,q,s), f=cross(r,s,p), g=cross(r,s,q);
+    if((d===0&&e===0&&f===0&&g===0)) return null;
+    if((d>0)!=(e>0) && (f>0)!=(g>0)){
+      const A=q[0]-p[0], B=r[0]-s[0], C=q[1]-p[1], D=r[1]-s[1], E=r[0]-p[0], F=r[1]-p[1];
+      const det=A*D-B*C; if(Math.abs(det)<1e-12) return null; const t=(E*D-B*F)/det; return [p[0]+t*A, p[1]+t*C];
+    }
+    return null;
+  }
   function drawIntersections(){
     const dots=[];
     for(let i=0;i<state.polylines.length;i++){
@@ -542,232 +479,193 @@
           const a0=A[a-1], a1=A[a];
           for(let b=1;b<B.length;b++){
             const b0=B[b-1], b1=B[b];
-            const P = segInter(a0,a1,b0,b1); if(P){ const sp=worldToScreen(P[0],P[1]); dots.push([sp.x,sp.y]); }
+            const P=segInter(a0,a1,b0,b1); if(P){ const sp=worldToScreen(P[0],P[1]); dots.push([sp.x,sp.y]); }
           }
         }
       }
     }
-    ctx.fillStyle = '#fef08a'; for(const d of dots){ ctx.beginPath(); ctx.arc(d[0],d[1], 4*(devicePixelRatio||1), 0, Math.PI*2); ctx.fill(); }
-  }
-  function segInter(p,q,r,s){
-    function cross(a,b,c){ return (b[0]-a[0])*(c[1]-a[1]) - (b[1]-a[1])*(c[0]-a[0]); }
-    const d = cross(p,q,r), e = cross(p,q,s), f=cross(r,s,p), g=cross(r,s,q);
-    if((d===0&&e===0&&f===0&&g===0)) return null;
-    if((d>0)!=(e>0) && (f>0)!=(g>0)){
-      const A=q[0]-p[0], B=r[0]-s[0], C=q[1]-p[1], D=r[1]-s[1], E=r[0]-p[0], F=r[1]-p[1];
-      const det=A*D-B*C; if(Math.abs(det)<1e-12) return null; const t=(E*D - B*F)/det; return [p[0]+t*A, p[1]+t*C];
-    }
-    return null;
+    ctx.fillStyle='#fef08a'; for(const d of dots){ ctx.beginPath(); ctx.arc(d[0],d[1], 4*(devicePixelRatio||1), 0, Math.PI*2); ctx.fill(); }
   }
 
-  /* =================== مماس وميل (Alt+Click) =================== */
-  function drawTangentAt(xw, yw) {
-    let best = null, bestCurve = null, bestP = null;
-    for (const pl of state.polylines) {
-      for (const P of pl.points) {
-        const d = (P[0] - xw) ** 2 + (P[1] - yw) ** 2;
-        if (best === null || d < best) { best = d; bestCurve = pl; bestP = P; }
-      }
-    }
-    if (!bestCurve) return; if (!bestP) bestP = [xw, yw];
-
-    const pts = bestCurve.points;
-    let idx = pts.indexOf(bestP);
-    if (idx < 0) {
-      idx = pts.reduce((bi, p, i) => {
-        const d = (p[0] - bestP[0]) ** 2 + (p[1] - bestP[1]) ** 2;
-        const dbi = (pts[bi][0] - bestP[0]) ** 2 + (pts[bi][1] - bestP[1]) ** 2;
-        return d < dbi ? i : bi;
-      }, 0);
-    }
-    const i0 = Math.max(0, idx - 1), i1 = Math.min(pts.length - 1, idx + 1);
-    const dx = pts[i1][0] - pts[i0][0], dy = pts[i1][1] - pts[i0][1];
-    if (Math.abs(dx) + Math.abs(dy) < 1e-12) return;
-    const slope = dy / dx, len = 4;
-    const xA = bestP[0] - len, yA = bestP[1] - slope * len;
-    const xB = bestP[0] + len, yB = bestP[1] + slope * len;
-
-    const A = worldToScreen(xA, yA), B = worldToScreen(xB, yB), S = worldToScreen(bestP[0], bestP[1]);
-    ctx.strokeStyle = '#f87171'; ctx.lineWidth = 2 * (devicePixelRatio || 1);
-    ctx.beginPath(); ctx.moveTo(A.x, A.y); ctx.lineTo(B.x, B.y); ctx.stroke();
-    ctx.beginPath(); ctx.fillStyle = '#fda4af'; ctx.arc(S.x, S.y, 4*(devicePixelRatio||1), 0, Math.PI*2); ctx.fill();
-
-    showTooltip(S.x, S.y, `النقطة الأقرب≈ (س=${bestP[0].toFixed(3)}, ص=${bestP[1].toFixed(3)}), الميل m≈ ${slope.toFixed(3)}`);
+  /* ---------- مماس (Alt+Click) ---------- */
+  function drawTangentAt(xw,yw){
+    let best=null, bestCurve=null, bestP=null;
+    for(const pl of state.polylines){ for(const P of pl.points){ const d=(P[0]-xw)**2+(P[1]-yw)**2; if(best===null||d<best){ best=d; bestCurve=pl; bestP=P; } } }
+    if(!bestCurve) return; if(!bestP) bestP=[xw,yw];
+    const pts=bestCurve.points; let idx=pts.indexOf(bestP);
+    if(idx<0){ idx=pts.reduce((bi,p,i)=>{ const d=(p[0]-bestP[0])**2+(p[1]-bestP[1])**2; const dbi=(pts[bi][0]-bestP[0])**2+(pts[bi][1]-bestP[1])**2; return d<dbi?i:bi; },0); }
+    const i0=Math.max(0,idx-1), i1=Math.min(pts.length-1,idx+1); const dx=pts[i1][0]-pts[i0][0], dy=pts[i1][1]-pts[i0][1]; if(Math.abs(dx)+Math.abs(dy)<1e-12) return;
+    const slope=dy/dx, len=4, xA=bestP[0]-len, yA=bestP[1]-slope*len, xB=bestP[0]+len, yB=bestP[1]+slope*len;
+    const A=worldToScreen(xA,yA), B=worldToScreen(xB,yB), S=worldToScreen(bestP[0],bestP[1]);
+    ctx.strokeStyle='#f87171'; ctx.lineWidth=2*(devicePixelRatio||1); ctx.beginPath(); ctx.moveTo(A.x,A.y); ctx.lineTo(B.x,B.y); ctx.stroke();
+    ctx.fillStyle='#fda4af'; ctx.beginPath(); ctx.arc(S.x,S.y, 4*(devicePixelRatio||1), 0, Math.PI*2); ctx.fill();
+    showTooltip(S.x,S.y, `النقطة الأقرب≈ (س=${bestP[0].toFixed(3)}, ص=${bestP[1].toFixed(3)}), الميل m≈ ${slope.toFixed(3)}`);
   }
 
-  /* =================== حلقة الرسم =================== */
-  function draw(){
-    drawGrid();
-    drawPolylines();
-    drawIntersections();
-    updateStatus();
-  }
+  /* ---------- حلقة الرسم ---------- */
+  function draw(){ drawGrid(); drawPolylines(); drawIntersections(); updateStatus(); }
 
-  /* =================== واجهة الدوال/المنزلقات =================== */
+  /* ---------- واجهة الدوال (لون + منزلق سمك + إدخال عربي) ---------- */
   function renderExprList(){
     exprListEl.innerHTML='';
     state.expressions.forEach((ex,idx)=>{
-      const card=document.createElement('div'); card.className='card expr-card'; card.dataset.id=ex.id;
-      const sw=document.createElement('div'); sw.className='swatch'; sw.style.background=ex.color||COLORS[idx%COLORS.length]; card.appendChild(sw);
-      const inp=document.createElement('input'); inp.className='input';
-      inp.placeholder='مثال: ص = س^2 | س + ص = 4 | 2س + ص = 5 | س*ص = 1 | r(θ)=1+cos(θ)';
+      const card=document.createElement('div');
+      card.className='card expr-card';
+      card.dataset.id=ex.id;
+
+      // 🎨 اللون
+      const col=document.createElement('input');
+      col.type='color'; col.className='colorpick expr-color';
+      col.value=ex.color||COLORS[idx%COLORS.length];
+      col.addEventListener('input',()=>{ ex.color=col.value; draw(); persistDeb(); });
+      card.appendChild(col);
+
+      // 📝 الحقل
+      const inp=document.createElement('input');
+      inp.className='input expr expr-input';
+      inp.placeholder='مثال: ص = س^2 | س + ص = ٤ | ٢س + ص = ٥ | س*ص = ١';
       inp.value=ex.text||'';
-      inp.addEventListener('input', e=>{ ex.text=e.target.value; draw(); persistDeb(); }); card.appendChild(inp);
-      const tools=document.createElement('div'); tools.className='mini';
-      const vis=document.createElement('input'); vis.type='checkbox'; vis.checked=ex.visible!==false; vis.title='إظهار/إخفاء';
-      vis.addEventListener('change',()=>{ ex.visible=vis.checked; draw(); persistDeb(); }); tools.appendChild(vis);
-      const del=document.createElement('button'); del.className='icon-btn'; del.title='حذف'; del.textContent='🗑️';
+      inp.addEventListener('input', () => {
+        const start=inp.selectionStart, end=inp.selectionEnd;
+        const before=inp.value, after=toArabicDigits(before);
+        if (before!==after) {
+          inp.value=after;
+          inp.setSelectionRange(start, end);
+        }
+        ex.text = inp.value;
+        draw(); persistDeb();
+      });
+      card.appendChild(inp);
+
+      // 🔧 الأدوات (صفّ ثانٍ)
+      const tools=document.createElement('div');
+      tools.className='expr-tools';
+
+      const lw=document.createElement('input');
+      lw.type='range'; lw.min='0.5'; lw.max='12'; lw.step='0.5';
+      lw.value=ex.width||2; lw.className='lw';
+      const lwVal=document.createElement('span');
+      lwVal.className='lw-label'; lwVal.textContent=toArabicDigits((ex.width||2).toString());
+      lw.addEventListener('input',()=>{ const v=Math.max(0.5, Math.min(12, parseFloat(lw.value)||2)); ex.width=v; lwVal.textContent=toArabicDigits(v.toString()); draw(); persistDeb(); });
+
+      const vis=document.createElement('input');
+      vis.type='checkbox'; vis.checked=ex.visible!==false; vis.title='إظهار/إخفاء';
+      vis.addEventListener('change',()=>{ ex.visible=vis.checked; draw(); persistDeb(); });
+
+      const del=document.createElement('button');
+      del.className='icon-btn'; del.title='حذف'; del.textContent='🗑️';
       del.addEventListener('click',()=>{ state.expressions=state.expressions.filter(it=>it.id!==ex.id); renderExprList(); draw(); persistDeb(); });
+
+      tools.appendChild(document.createTextNode('سمك'));
+      tools.appendChild(lw);
+      tools.appendChild(lwVal);
+      tools.appendChild(vis);
       tools.appendChild(del);
-      card.appendChild(tools); exprListEl.appendChild(card);
+
+      card.appendChild(tools);
+      exprListEl.appendChild(card);
     });
   }
-  const markExprError = (id,msg) => { const card=exprListEl.querySelector(`[data-id="${id}"]`); if(card){ card.style.borderColor='#7f1d1d'; card.title=msg; } };
-  const clearExprError = (id) => { const card=exprListEl.querySelector(`[data-id="${id}"]`); if(card){ card.style.borderColor='var(--border)'; card.title=''; } };
 
+  function markExprError(id,msg){ const card=exprListEl.querySelector(`[data-id="${id}"]`); if(card){ card.style.borderColor='#7f1d1d'; card.title=msg; } }
+  function clearExprError(id){ const card=exprListEl.querySelector(`[data-id="${id}"]`); if(card){ card.style.borderColor='var(--border)'; card.title=''; } }
+
+  /* ---------- المنزلقات ---------- */
   function renderSliders(){
     sliderListEl.innerHTML='';
     state.sliders.forEach((sl,idx)=>{
-      const card=document.createElement('div'); card.className='card slider-card'; card.dataset.name=sl.name;
-      const row=document.createElement('div'); row.className='range-row';
-      const name=document.createElement('input'); name.className='input'; name.style.width='100%'; name.value=sl.name; name.title='اسم المتغيّر';
-      name.addEventListener('change',()=>{ sl.name = name.value.trim(); draw(); persistDeb(); }); row.appendChild(name);
-      const range=document.createElement('input'); range.type='range'; range.min=sl.min; range.max=sl.max; range.step=sl.step; range.value=sl.value;
-      range.addEventListener('input',()=>{ sl.value=parseFloat(range.value); val.value=sl.value; draw(); persistDeb(); }); row.appendChild(range);
-      const val=document.createElement('input'); val.className='input'; val.value=sl.value; val.style.textAlign='center';
-      val.addEventListener('change',()=>{ let v=parseFloat(val.value); if(isNaN(v)) v=sl.value; sl.value=v; range.value=v; draw(); persistDeb(); }); row.appendChild(val);
-      const del=document.createElement('button'); del.className='btn danger'; del.textContent='حذف';
-      del.onclick=()=>{ state.sliders.splice(idx,1); renderSliders(); draw(); persistDeb(); }; row.appendChild(del);
-      card.appendChild(row);
+      const card=document.createElement('div'); card.className='card'; card.dataset.name=sl.name;
 
-      const row2=document.createElement('div'); row2.className='range-row';
-      const lmin=document.createElement('input'); lmin.className='input'; lmin.value=sl.min;
-      lmin.addEventListener('change',()=>{ sl.min=parseFloat(lmin.value)||sl.min; range.min=sl.min; }); row2.appendChild(lmin);
-      const lstep=document.createElement('input'); lstep.className='input'; lstep.value=sl.step;
-      lstep.addEventListener('change',()=>{ sl.step=parseFloat(lstep.value)||sl.step; range.step=sl.step; }); row2.appendChild(lstep);
-      const lmax=document.createElement('input'); lmax.className='input'; lmax.value=sl.max;
-      lmax.addEventListener('change',()=>{ sl.max=parseFloat(lmax.value)||sl.max; range.max=sl.max; }); row2.appendChild(lmax);
-      const hint=document.createElement('div'); hint.className='muted'; hint.style.gridColumn='1/-1'; hint.textContent='الترتيب: [الحد الأدنى, الخطوة, الحد الأقصى]';
-      card.appendChild(row2); card.appendChild(hint);
+      const row=document.createElement('div'); row.className='mini'; row.style.gap='8px';
+      const name=document.createElement('input'); name.className='input'; name.style.width='120px'; name.value=sl.name; name.title='اسم المتغيّر';
+      name.addEventListener('change',()=>{ sl.name=name.value.trim(); draw(); persistDeb(); });
+
+      const range=document.createElement('input'); range.type='range'; range.min=sl.min; range.max=sl.max; range.step=sl.step; range.value=sl.value; range.style.flex='1';
+      const val=document.createElement('span'); val.className='lw-label'; val.textContent=toArabicDigits(String(sl.value));
+      range.addEventListener('input',()=>{ sl.value=parseFloat(range.value); val.textContent=toArabicDigits(String(sl.value)); draw(); persistDeb(); });
+
+      const del=document.createElement('button'); del.className='btn danger'; del.textContent='حذف';
+      del.onclick=()=>{ state.sliders.splice(idx,1); renderSliders(); draw(); persistDeb(); };
+
+      row.appendChild(name); row.appendChild(range); row.appendChild(val); row.appendChild(del);
+
+      const row2=document.createElement('div'); row2.className='mini'; row2.style.gap='6px';
+      const lmin=document.createElement('input'); lmin.className='input'; lmin.style.width='80px'; lmin.value=sl.min;
+      const lstep=document.createElement('input'); lstep.className='input'; lstep.style.width='80px'; lstep.value=sl.step;
+      const lmax=document.createElement('input'); lmax.className='input'; lmax.style.width='80px'; lmax.value=sl.max;
+      lmin.addEventListener('change',()=>{ sl.min=parseFloat(lmin.value)||sl.min; range.min=sl.min; });
+      lstep.addEventListener('change',()=>{ sl.step=parseFloat(lstep.value)||sl.step; range.step=sl.step; });
+      lmax.addEventListener('change',()=>{ sl.max=parseFloat(lmax.value)||sl.max; range.max=sl.max; });
+
+      const hint=document.createElement('div'); hint.className='muted'; hint.textContent='المدى: [الحد الأدنى، الخطوة، الحد الأقصى]'; hint.style.marginTop='6px';
+
+      card.appendChild(row); card.appendChild(row2);
+      row2.appendChild(lmin); row2.appendChild(lstep); row2.appendChild(lmax);
+      card.appendChild(hint);
       sliderListEl.appendChild(card);
     });
   }
 
-  /* =================== تفاعل الماوس =================== */
-  canvas.addEventListener('mousemove', (e)=>{
-    const rect=canvas.getBoundingClientRect(); const r=devicePixelRatio||1;
-    const sx=(e.clientX-rect.left)*r, sy=(e.clientY-rect.top)*r; const w=screenToWorld(sx,sy);
+  /* ---------- تفاعل الماوس/اللمس ---------- */
+  canvas.addEventListener('mousemove', (e)=>{ const rect=canvas.getBoundingClientRect(), r=devicePixelRatio||1; const sx=(e.clientX-rect.left)*r, sy=(e.clientY-rect.top)*r; const w=screenToWorld(sx,sy);
     state.mouse={x:sx,y:sy,wx:w.x,wy:w.y};
-    if(state.dragging){
-      const dx=(sx-state.dragStart.x)/(state.scale*r); const dy=(sy-state.dragStart.y)/(state.scale*r);
-      state.centerX=state.dragStart.cx-dx; state.centerY=state.dragStart.cy+dy; draw();
-    } else updateStatus();
+    if(state.dragging){ const dx=(sx-state.dragStart.x)/(state.scale*r), dy=(sy-state.dragStart.y)/(state.scale*r); state.centerX=state.dragStart.cx-dx; state.centerY=state.dragStart.cy+dy; draw(); } else updateStatus();
   });
-  canvas.addEventListener('mousedown', ()=>{
-    state.dragging=true; state.dragStart={x:state.mouse.x,y:state.mouse.y,cx:state.centerX,cy:state.centerY};
-  });
+  canvas.addEventListener('mousedown', ()=>{ state.dragging=true; state.dragStart={x:state.mouse.x,y:state.mouse.y,cx:state.centerX,cy:state.centerY}; });
   window.addEventListener('mouseup', ()=>{ state.dragging=false; persistDeb(); });
-  canvas.addEventListener('wheel', (e)=>{
-    e.preventDefault();
-    const delta=-Math.sign(e.deltaY);
-    zoomAt(delta>0?1.12:1/1.12, state.mouse.x, state.mouse.y);
-  }, {passive:false});
+  canvas.addEventListener('wheel', (e)=>{ e.preventDefault(); const delta=-Math.sign(e.deltaY); zoomAt(delta>0?1.12:1/1.12, state.mouse.x, state.mouse.y); }, {passive:false});
   canvas.addEventListener('dblclick', ()=>{ resetView(); draw(); persistDeb(); });
   canvas.addEventListener('click', (e)=>{ if(e.altKey){ const w=screenToWorld(state.mouse.x, state.mouse.y); draw(); drawTangentAt(w.x,w.y); } });
 
-  /* =================== تفاعل اللمس (جوال) =================== */
+  // لمس
   canvas.addEventListener('touchstart', (e)=>{
     if(e.touches.length===1){
-      const t=e.touches[0]; const rect=canvas.getBoundingClientRect(); const r=devicePixelRatio||1;
+      const t=e.touches[0], rect=canvas.getBoundingClientRect(), r=devicePixelRatio||1;
       const sx=(t.clientX-rect.left)*r, sy=(t.clientY-rect.top)*r;
-      state.touch.active=true; state.touch.fingerCount=1;
-      state.dragging=true; state.dragStart={x:sx,y:sy,cx:state.centerX,cy:state.centerY};
-      // Double-tap لإعادة الضبط
-      const now=Date.now(); if(now - state.touch.lastTapTime < 300){ resetView(); draw(); persistDeb(); }
-      state.touch.lastTapTime = now;
+      state.touch.active=true; state.touch.fingerCount=1; state.dragging=true; state.dragStart={x:sx,y:sy,cx:state.centerX,cy:state.centerY};
+      const now=Date.now(); if(now-state.touch.lastTapTime<300){ resetView(); draw(); persistDeb(); } state.touch.lastTapTime=now;
     }else if(e.touches.length===2){
-      state.touch.active=true; state.touch.fingerCount=2;
-      const [a,b]=e.touches;
-      const dist=Math.hypot(a.clientX-b.clientX, a.clientY-b.clientY);
-      state.touch.lastDist=dist;
-      state.dragging=false;
-      state.touch.lastMid = { x:(a.clientX+b.clientX)/2, y:(a.clientY+b.clientY)/2 };
+      state.touch.active=true; state.touch.fingerCount=2; const [a,b]=e.touches; state.touch.lastDist=Math.hypot(a.clientX-b.clientX, a.clientY-b.clientY); state.dragging=false;
     }
   }, {passive:true});
-
   canvas.addEventListener('touchmove', (e)=>{
     if(!state.touch.active) return;
     if(state.touch.fingerCount===1 && e.touches.length===1){
-      const t=e.touches[0]; const rect=canvas.getBoundingClientRect(); const r=devicePixelRatio||1;
-      const sx=(t.clientX-rect.left)*r, sy=(t.clientY-rect.top)*r;
-      const dx=(sx-state.dragStart.x)/(state.scale*r);
-      const dy=(sy-state.dragStart.y)/(state.scale*r);
-      state.centerX=state.dragStart.cx-dx; state.centerY=state.dragStart.cy+dy; draw();
+      const t=e.touches[0], rect=canvas.getBoundingClientRect(), r=devicePixelRatio||1; const sx=(t.clientX-rect.left)*r, sy=(t.clientY-rect.top)*r;
+      const dx=(sx-state.dragStart.x)/(state.scale*r), dy=(sy-state.dragStart.y)/(state.scale*r); state.centerX=state.dragStart.cx-dx; state.centerY=state.dragStart.cy+dy; draw();
     }else if(e.touches.length===2){
-      const [a,b]=e.touches;
-      const dist=Math.hypot(a.clientX-b.clientX, a.clientY-b.clientY);
-      const factor = Math.pow(dist / (state.touch.lastDist||dist), 1); // تكبير حسب النسبة
-      // التكبير حول منتصف الإصبعين
-      const rect=canvas.getBoundingClientRect(); const r=devicePixelRatio||1;
-      const midSx = ((a.clientX+b.clientX)/2 - rect.left)*r;
-      const midSy = ((a.clientY+b.clientY)/2 - rect.top)*r;
-      zoomAt(factor, midSx, midSy);
-      state.touch.lastDist=dist;
+      const [a,b]=e.touches; const dist=Math.hypot(a.clientX-b.clientX, a.clientY-b.clientY); const factor=dist/(state.touch.lastDist||dist);
+      const rect=canvas.getBoundingClientRect(), r=devicePixelRatio||1; const midSx=((a.clientX+b.clientX)/2-rect.left)*r, midSy=((a.clientY+b.clientY)/2-rect.top)*r;
+      zoomAt(factor, midSx, midSy); state.touch.lastDist=dist;
     }
   }, {passive:true});
+  window.addEventListener('touchend', ()=>{ state.touch.active=false; state.dragging=false; state.touch.fingerCount=0; persistDeb(); }, {passive:true});
 
-  window.addEventListener('touchend', ()=>{
-    state.touch.active=false; state.dragging=false; state.touch.fingerCount=0; persistDeb();
-  }, {passive:true});
-
-  function zoomAt(factor, sx, sy){
-    const before=screenToWorld(sx,sy);
-    state.scale=Math.min(1200, Math.max(8, state.scale*factor));
-    const after=screenToWorld(sx,sy);
-    state.centerX += (before.x-after.x); state.centerY += (before.y-after.y); draw();
-  }
-
-  /* =================== أزرار عامة / قائمة الجوال =================== */
-  document.getElementById('btnDrawer').onclick=()=>{
-    document.getElementById('sidebar').classList.toggle('open');
-  };
-
-  document.getElementById('btnAdd').onclick=()=>{ state.expressions.push({ id:uid(), color: COLORS[state.expressions.length%COLORS.length], text:'', visible:true }); renderExprList(); };
+  /* ---------- أزرار ---------- */
+  document.getElementById('btnDrawer').onclick=()=>{ sidebarEl.classList.toggle('open'); };
+  document.getElementById('btnAdd').onclick = ()=>{ state.expressions.push({ id:uid(), color: COLORS[state.expressions.length%COLORS.length], width:2, text:'', visible:true }); renderExprList(); };
   document.getElementById('btnAddSlider').onclick=()=>{ state.sliders.push({ name:`a${state.sliders.length+1}`, min:-5, max:5, step:0.1, value:1 }); renderSliders(); draw(); };
   document.getElementById('btnExport').onclick=()=>{ const url=canvas.toDataURL('image/png'); const a=document.createElement('a'); a.href=url; a.download='graph.png'; a.click(); };
-  document.getElementById('btnReset').onclick=()=>{ resetView(); draw(); persistDeb(); };
-  document.getElementById('btnZoomIn').onclick=()=> zoomAt(1.12, state.mouse.x, state.mouse.y);
-  document.getElementById('btnZoomOut').onclick=()=> zoomAt(1/1.12, state.mouse.x, state.mouse.y);
-  document.getElementById('btnShare').onclick=()=>{ persist(); navigator.clipboard?.writeText(location.href).then(()=>flash('تم نسخ الرابط')).catch(()=>flash('انسخ الرابط من شريط العنوان')); };
-  document.getElementById('btnSave').onclick=()=>{ const blob=new Blob([JSON.stringify(serialize(),null,2)],{type:'application/json'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='graph-settings.json'; a.click(); };
-  document.getElementById('btnLoad').onclick=()=>{ document.getElementById('fileLoader').click(); };
-  document.getElementById('fileLoader').addEventListener('change', (e)=>{ const f=e.target.files[0]; if(!f) return; const rd=new FileReader(); rd.onload=()=>{ try{ const obj=JSON.parse(rd.result); deserialize(obj); renderExprList(); renderSliders(); draw(); persistDeb(); }catch(err){ alert('ملف غير صالح'); } }; rd.readAsText(f); });
+  document.getElementById('btnReset').onclick = ()=>{ resetView(); draw(); persistDeb(); };
+  document.getElementById('btnZoomIn').onclick = ()=> zoomAt(1.12, state.mouse.x, state.mouse.y);
+  document.getElementById('btnZoomOut').onclick= ()=> zoomAt(1/1.12, state.mouse.x, state.mouse.y);
+  document.getElementById('btnShare').onclick  = ()=>{ persist(); navigator.clipboard?.writeText(location.href).then(()=>flash('تم نسخ الرابط')).catch(()=>flash('انسخ الرابط من شريط العنوان')); };
+  document.getElementById('btnSave').onclick   = ()=>{ const blob=new Blob([JSON.stringify(serialize(),null,2)],{type:'application/json'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='graph-settings.json'; a.click(); };
+  document.getElementById('btnLoad').onclick   = ()=>{ document.getElementById('fileLoader').click(); };
+  document.getElementById('btnTheme').onclick  = ()=>{ const html=document.documentElement; const toLight=!html.classList.contains('light'); [document.documentElement, document.body].forEach(el=>el.classList.toggle('light', toLight)); state.theme=toLight?'light':'dark'; draw(); persistDeb(); };
 
-  // تبديل المظهر: كلاس light على <html> و <body> (توريث متغيّرات CSS)
-  document.getElementById('btnTheme').onclick = () => {
-    const html = document.documentElement;
-    const toLight = !html.classList.contains('light');
-    [document.documentElement, document.body].forEach(el => el.classList.toggle('light', toLight));
-    state.theme = toLight ? 'light' : 'dark';
-    draw(); persistDeb();
-  };
-
-  /* =================== الحالة / المشاركة =================== */
+  /* ---------- حالة/مشاركة ---------- */
   function updateStatus(){ statusEl.textContent = `س = ${toArabicDigits(state.mouse.wx.toFixed(3))}, ص = ${toArabicDigits(state.mouse.wy.toFixed(3))} | مقياس: 1u ≈ ${Math.round(state.scale)}px`; }
   function flash(msg){ const old=statusEl.textContent; statusEl.textContent=msg; setTimeout(()=>statusEl.textContent=old, 1200); }
-
-  function serialize(){ return { v:4, cx:state.centerX, cy:state.centerY, sc:state.scale, theme:state.theme, expr: state.expressions.map(e=>({t:e.text,c:e.color,v:!!e.visible})), sliders: state.sliders }; }
+  function serialize(){ return { v:7, cx:state.centerX, cy:state.centerY, sc:state.scale, theme:state.theme, expr: state.expressions.map(e=>({t:e.text,c:e.color,w:e.width,v:!!e.visible})), sliders: state.sliders }; }
   function deserialize(o){
     if(!o) return;
     if(typeof o.cx==='number') state.centerX=o.cx;
     if(typeof o.cy==='number') state.centerY=o.cy;
     if(typeof o.sc==='number') state.scale=o.sc;
-    const isLight = o.theme === 'light';
-    [document.documentElement, document.body].forEach(el => el.classList.toggle('light', isLight));
-    state.theme = isLight ? 'light' : 'dark';
-    if(Array.isArray(o.expr))
-      state.expressions = o.expr.map((it,i)=>({id:uid(), text:it.t||'', color:it.c||COLORS[i%COLORS.length], visible: it.v!==false }));
-    if(Array.isArray(o.sliders)) state.sliders = o.sliders;
+    const isLight = o.theme==='light'; [document.documentElement, document.body].forEach(el=>el.classList.toggle('light', isLight)); state.theme=isLight?'light':'dark';
+    if(Array.isArray(o.expr)) state.expressions=o.expr.map((it,i)=>({ id:uid(), text:it.t||'', color:it.c||COLORS[i%COLORS.length], width: Math.max(0.5, Number(it.w||2)), visible: it.v!==false }));
+    if(Array.isArray(o.sliders)) state.sliders=o.sliders;
   }
   function persist(){ const b64=btoa(unescape(encodeURIComponent(JSON.stringify(serialize())))); const url=new URL(location.href); url.hash='#g='+b64; history.replaceState(null,'',url); }
   const persistDeb = debounce(persist, 250);
@@ -776,11 +674,11 @@
 
   function resetView(){ state.centerX=0; state.centerY=0; state.scale=60; }
   function showTooltip(sx,sy,msg){ tooltip.style.left=`${sx}px`; tooltip.style.top=`${sy}px`; tooltip.textContent=msg; tooltip.style.display='block'; setTimeout(()=>tooltip.style.display='none', 1800); }
+  function zoomAt(factor, sx, sy){ const before=screenToWorld(sx,sy); state.scale=Math.min(1200, Math.max(8, state.scale*factor)); const after=screenToWorld(sx,sy); state.centerX+=(before.x-after.x); state.centerY+=(before.y-after.y); draw(); }
 
   function init(){
-    renderExprList();
-    renderSliders();
-    if(!loadFromUrl()){ persist(); }
+    renderExprList(); renderSliders();
+    if(!loadFromUrl()) persist();
     resizeCanvas(); draw();
   }
   init();
