@@ -2,81 +2,104 @@
 <html lang="ar" dir="rtl">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>آلة رسم بياني (س/ص) – النسخة الموسّعة</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+  <title>آلة رسم بياني (س/ص) – النسخة النهائية</title>
   <style>
-    :root {
-      /* الوضع الداكن (الافتراضي) */
-      --bg: #0b1220; --panel: #0f172a; --panel-2: #111827; --text: #e5e7eb;
-      --muted: #9fb2c9; --grid-sub: #162133; --grid: #20314b; --axis: #93c5fd;
-      --accent: #22d3ee; --danger: #ef4444; --ok: #22c55e; --warn: #f59e0b;
-      --chip: #0b1422; --border: #172133; --shadow: 0 1px 0 #0c111b, inset 0 1px 0 rgba(255,255,255,.02);
+    :root{
+      /* داكن (افتراضي) */
+      --bg:#0b1220; --panel:#0f172a; --panel-2:#111827; --text:#e5e7eb;
+      --muted:#9fb2c9; --grid-sub:#162133; --grid:#20314b; --axis:#93c5fd;
+      --accent:#22d3ee; --danger:#ef4444; --ok:#22c55e; --warn:#f59e0b;
+      --chip:#0b1422; --border:#172133; --shadow:0 1px 0 #0c111b, inset 0 1px 0 rgba(255,255,255,.02);
+      --sidebar-w:380px;
+      --z-drawer:20; --z-fab:15; --z-status:10;
     }
-    /* لما نضيف كلاس light على <html> تتحول المتغيّرات */
-    :root.light {
-      --bg: #f8fafc; --panel: #ffffff; --panel-2: #f3f4f6; --text: #0f172a;
-      --muted: #475569; --grid-sub: #e5e7eb; --grid: #cbd5e1; --axis: #1f2937;
-      --accent: #0ea5e9; --danger: #dc2626; --ok: #16a34a; --warn: #d97706;
-      --chip: #eef2ff; --border: #e5e7eb; --shadow: 0 1px 0 #e5e7eb, inset 0 1px 0 rgba(0,0,0,.02);
+    :root.light{
+      /* فاتح */
+      --bg:#f8fafc; --panel:#ffffff; --panel-2:#f3f4f6; --text:#0f172a;
+      --muted:#475569; --grid-sub:#e5e7eb; --grid:#cbd5e1; --axis:#1f2937;
+      --accent:#0ea5e9; --danger:#dc2626; --ok:#16a34a; --warn:#d97706;
+      --chip:#eef2ff; --border:#e5e7eb; --shadow:0 1px 0 #e5e7eb, inset 0 1px 0 rgba(0,0,0,.02);
     }
 
-    * { box-sizing: border-box; }
-    html, body { height: 100%; }
-    body {
-      margin: 0; background: var(--bg); color: var(--text);
-      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, "Noto Sans Arabic", Arial, "Apple Color Emoji", "Segoe UI Emoji";
-      overflow: hidden;
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0; background:var(--bg); color:var(--text);
+      font-family:ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,"Noto Sans Arabic",Arial,"Apple Color Emoji","Segoe UI Emoji";
+      overflow:hidden;
     }
-    .app { display: grid; grid-template-columns: 380px 1fr; height: 100%; }
 
-    .sidebar { background: linear-gradient(180deg, var(--panel), var(--panel-2)); border-left: 1px solid var(--border); padding: 14px; overflow: auto; }
-    .header { display: grid; grid-template-columns: 1fr auto; gap: 8px; align-items: center; margin-bottom: 8px; }
-    h1 { font-size: 18px; margin: 0; font-weight: 800; }
-    .muted { color: var(--muted); font-size: 12px; }
+    .app{display:grid; grid-template-columns: var(--sidebar-w) 1fr; height:100%}
+    .sidebar{
+      background:linear-gradient(180deg,var(--panel),var(--panel-2));
+      border-left:1px solid var(--border); padding:14px; overflow:auto;
+      position:relative;
+    }
+    .header{display:grid; grid-template-columns:1fr auto; gap:8px; align-items:center; margin-bottom:8px}
+    h1{font-size:18px; margin:0; font-weight:800}
+    .muted{color:var(--muted); font-size:12px}
+    .toolbar{display:flex; flex-wrap:wrap; gap:8px; margin:10px 0 12px}
+    .btn{
+      background:transparent; color:var(--text); border:1px solid var(--border);
+      padding:8px 10px; border-radius:10px; cursor:pointer; font-size:13px; box-shadow:var(--shadow);
+    }
+    .btn:hover{filter:brightness(1.05)}
+    .btn.primary{background:var(--chip)}
+    .btn.ok{color:#0f5132; background:rgba(34,197,94,.15); border-color:rgba(34,197,94,.35)}
+    .btn.warn{color:#7c2d12; background:rgba(245,158,11,.15); border-color:rgba(245,158,11,.35)}
+    .btn.danger{color:#7f1d1d; background:rgba(239,68,68,.15); border-color:rgba(239,68,68,.35)}
 
-    .toolbar { display: flex; flex-wrap: wrap; gap: 8px; margin: 10px 0 12px; }
-    .btn { background: transparent; color: var(--text); border: 1px solid var(--border); padding: 8px 10px; border-radius: 10px; cursor: pointer; font-size: 13px; box-shadow: var(--shadow); }
-    .btn:hover { filter: brightness(1.05); }
-    .btn.primary { background: var(--chip); }
-    .btn.ok { color: #0f5132; background: rgba(34,197,94,.15); border-color: rgba(34,197,94,.35); }
-    .btn.warn { color: #7c2d12; background: rgba(245,158,11,.15); border-color: rgba(245,158,11,.35); }
-    .btn.danger { color: #7f1d1d; background: rgba(239,68,68,.15); border-color: rgba(239,68,68,.35); }
+    .hint{font-size:12px; color:var(--muted); line-height:1.7}
+    .badge{padding:2px 8px; border-radius:999px; border:1px solid var(--border); background:var(--chip)}
 
-    .section { margin-top: 10px; }
-    .section h3 { margin: 12px 0 8px; font-size: 14px; }
+    .expr-list,.slider-list{display:grid; gap:10px}
+    .card{background:var(--panel); border:1px solid var(--border); border-radius:14px; padding:10px; box-shadow:var(--shadow)}
+    .expr-card{display:grid; grid-template-columns:20px 1fr auto; gap:8px; align-items:center}
+    .swatch{width:14px; height:14px; border-radius:4px; border:2px solid rgba(0,0,0,.08)}
+    .input{width:100%; background:var(--panel-2); border:1px solid var(--border); color:var(--text); padding:8px 10px; border-radius:10px; font-size:14px; outline:none}
+    .mini{display:flex; gap:6px; align-items:center}
+    .icon-btn{background:transparent; border:0; color:var(--muted); cursor:pointer; font-size:16px}
+    .icon-btn:hover{color:var(--danger)}
 
-    .expr-list, .slider-list { display: grid; gap: 10px; }
-    .card { background: var(--panel); border: 1px solid var(--border); border-radius: 14px; padding: 10px; box-shadow: var(--shadow); }
-    .expr-card { display: grid; grid-template-columns: 20px 1fr auto; gap: 8px; align-items: center; }
-    .swatch { width: 14px; height: 14px; border-radius: 4px; border: 2px solid rgba(0,0,0,.08); }
-    .input { width: 100%; background: var(--panel-2); border: 1px solid var(--border); color: var(--text); padding: 8px 10px; border-radius: 10px; font-size: 14px; outline: none; }
+    .canvas-wrap{position:relative; background:radial-gradient(1200px 600px at 100% 0%, rgba(34,211,238,.04), transparent 60%)}
+    canvas{display:block; width:100%; height:100%; background:transparent}
 
-    .mini { display: flex; gap: 6px; align-items: center; }
-    .icon-btn { background: transparent; border: 0; color: var(--muted); cursor: pointer; font-size: 16px; }
-    .icon-btn:hover { color: var(--danger); }
+    .status{
+      position:absolute; bottom:8px; left:10px; z-index:var(--z-status);
+      background:rgba(2,6,23,.55); border:1px solid var(--border); border-radius:10px;
+      padding:6px 10px; font-size:12px; color:#cbd5e1; backdrop-filter:blur(4px)
+    }
+    .light .status{background:rgba(255,255,255,.75); color:#0f172a; border-color:#cbd5e1}
 
-    .hint { font-size: 12px; color: var(--muted); line-height: 1.7; }
-    .badge { padding: 2px 8px; border-radius: 999px; border: 1px solid var(--border); background: var(--chip); }
+    .floating{position:absolute; top:8px; left:12px; display:flex; gap:6px; z-index:var(--z-fab)}
+    .fab{background:var(--panel); border:1px solid var(--border); color:var(--text); padding:6px 10px; border-radius:10px; cursor:pointer; font-size:13px}
 
-    .canvas-wrap { position: relative; background: radial-gradient(1200px 600px at 100% 0%, rgba(34,211,238,.04), transparent 60%); }
-    canvas { display: block; width: 100%; height: 100%; background: transparent; }
+    /* زر القائمة للجوال */
+    .drawer-toggle{
+      position:absolute; top:10px; right:10px; z-index:var(--z-drawer);
+      display:none; /* يُظهر على الشاشات الصغيرة */
+      background:var(--panel); border:1px solid var(--border); color:var(--text);
+      padding:6px 10px; border-radius:10px; cursor:pointer; font-size:13px;
+    }
 
-    .status { position: absolute; bottom: 8px; left: 10px; background: rgba(2,6,23,.55); border: 1px solid var(--border); border-radius: 10px; padding: 6px 10px; font-size: 12px; color: #cbd5e1; backdrop-filter: blur(4px); }
-    .light .status { background: rgba(255,255,255,.75); color: #0f172a; border-color: #cbd5e1; }
-
-    .floating { position: absolute; top: 8px; left: 12px; display: flex; gap: 6px; z-index: 5; }
-    .fab { background: var(--panel); border: 1px solid var(--border); color: var(--text); padding: 6px 10px; border-radius: 10px; cursor: pointer; font-size: 13px; }
-
-    .range-row { display: grid; grid-template-columns: 70px 1fr 70px 70px; gap: 6px; align-items: center; }
-    .slider-card { display: grid; gap: 8px; }
-
-    .tooltip { position: absolute; pointer-events: none; background: rgba(2,6,23,.9); color: #e2e8f0; border: 1px solid var(--border); padding: 6px 8px; border-radius: 8px; font-size: 12px; transform: translate(-50%, -120%); white-space: nowrap; }
-    .light .tooltip { background: rgba(255,255,255,.95); color: #0f172a; }
+    @media (max-width: 900px){
+      .app{grid-template-columns: 1fr}
+      .sidebar{
+        position:absolute; inset:0 auto 0 0; width:min(100vw, var(--sidebar-w));
+        transform:translateX(-100%); transition:transform .25s ease; z-index:var(--z-drawer);
+        box-shadow: 2px 0 18px rgba(0,0,0,.25);
+      }
+      .sidebar.open{transform:translateX(0)}
+      .drawer-toggle{display:inline-block}
+      .floating{left:auto; right:12px}
+    }
   </style>
 </head>
 <body>
+  <button id="btnDrawer" class="drawer-toggle">☰ القائمة</button>
   <div class="app" id="appRoot">
-    <aside class="sidebar">
+    <aside id="sidebar" class="sidebar">
       <div class="header">
         <div>
           <h1>آلة رسم بياني (س/ص) – موسّعة</h1>
@@ -91,9 +114,9 @@
         <button id="btnAdd" class="btn primary">+ إضافة دالة</button>
         <button id="btnAddSlider" class="btn">+ منزلق</button>
         <button id="btnExport" class="btn">تصدير PNG</button>
-        <button id="btnSave" class="btn ok">حفظ إعدادات (JSON)</button>
+        <button id="btnSave" class="btn ok">حفظ (JSON)</button>
         <button id="btnLoad" class="btn warn">استيراد</button>
-        <button id="btnShare" class="btn">مشاركة كرابط</button>
+        <button id="btnShare" class="btn">مشاركة</button>
       </div>
 
       <div class="hint">
@@ -111,7 +134,7 @@
         <h3>الدوال</h3>
         <div id="exprList" class="expr-list"></div>
         <div class="mini" style="margin-top:6px; color:var(--muted); font-size:12px">
-          نصيحة: اضغط <b>Alt</b> على اللوحة ثم انقر لرسم <b>مماس</b> عند أقرب نقطة. سيتم إظهار <b>الميل</b> ونقطة التقاطع إن وُجدت.
+          للتجريب: اضغط <b>Alt</b> ثم انقر على المنحنى لعرض <b>مماس</b> والميل عند أقرب نقطة.
         </div>
       </div>
 
@@ -136,19 +159,20 @@
 
 <script>
 (() => {
-  // ======= أرقام عربية =======
+  /* =================== أدوات مساعدة =================== */
   const AR_DIGITS = "٠١٢٣٤٥٦٧٨٩"; const EN_DIGITS = "0123456789";
-  const toArabicDigits = (s) => String(s).replace(/[0-9]/g, d => AR_DIGITS[d]);
-  const toEnglishDigits = (s) => String(s).replace(/[٠-٩]/g, ch => EN_DIGITS[AR_DIGITS.indexOf(ch)]).replace(/،/g, ',');
+  const toArabicDigits = s => String(s).replace(/[0-9]/g, d => AR_DIGITS[d]);
+  const toEnglishDigits = s => String(s).replace(/[٠-٩]/g, ch => EN_DIGITS[AR_DIGITS.indexOf(ch)]).replace(/،/g, ',');
+  const cssVar = name => getComputedStyle(document.documentElement).getPropertyValue(name);
 
-  // ======= أسماء دوال عربية -> Math (تصحيح نمط "جذر") =======
+  /* ====== تحويل أسماء الدوال بالعربية إلى Math ====== */
   const arabicPairs = [
-    [/\bجا\b/g, 'sin'], [/\bجتا\b/g, 'cos'], [/\bظا\b/g, 'tan'],
-    [/\bجذر\b/g, 'sqrt'], [/\bقيمة_?مطلقة\b/g, 'abs'],
-    [/\bلو\b/g, 'log'], [/\bلن\b/g, 'ln']
+    [/\bجا\b/g,'sin'], [/\bجتا\b/g,'cos'], [/\bظا\b/g,'tan'],
+    [/\bجذر\b/g,'sqrt'], [/\bقيمة_?مطلقة\b/g,'abs'],
+    [/\bلو\b/g,'log'], [/\bلن\b/g,'ln']
   ];
 
-  // ======= الحالة =======
+  /* =================== حالة التطبيق =================== */
   const canvas = document.getElementById('canvas');
   const ctx = canvas.getContext('2d');
   const statusEl = document.getElementById('status');
@@ -157,7 +181,7 @@
   const sliderListEl = document.getElementById('sliderList');
 
   const COLORS = ['#22d3ee','#a78bfa','#f472b6','#34d399','#f59e0b','#60a5fa','#ef4444','#10b981','#eab308','#06b6d4'];
-  function uid(){ return Math.random().toString(36).slice(2,9); }
+  const uid = () => Math.random().toString(36).slice(2,9);
 
   const state = {
     centerX: 0, centerY: 0, scale: 60,
@@ -166,10 +190,13 @@
     theme: 'dark',
     expressions: [ { id: uid(), color: COLORS[0], text: 'ص = س^2', visible: true } ],
     sliders: [],
-    polylines: []
+    polylines: [],
+    touch: {
+      active:false, lastDist:0, lastMid:null, lastTapTime:0, fingerCount:0
+    }
   };
 
-  // ======= تطبيع وإدخال ضرب ضمني =======
+  /* =================== تطبيع النص + ضرب ضمني =================== */
   function preprocessBasic(s){
     s = toEnglishDigits(String(s));
 
@@ -186,136 +213,110 @@
     arabicPairs.forEach(([re, rep]) => s = s.replace(re, rep));
     s = s.replace(/\bln\(/g, 'log(');
 
-    // ضرب ضمني شائع
+    // الضرب الضمني الأكثر شيوعًا
     const FN = '(sin|cos|tan|sqrt|abs|log)';
-    s = s.replace(/(\d)\s*(x|y|theta|t|PI|E|\()/gi, '$1*$2');
-    s = s.replace(/(x|y|theta|t|PI|E|\))\s*(\d|\()/gi, '$1*$2');
-    s = s.replace(new RegExp(`(\\d|x|y|theta|t|PI|E)\\s*${FN}`, 'gi'), '$1*$2');
-    s = s.replace(new RegExp(`\\)\\s*${FN}`, 'gi'), ')*$1');
-    s = s.replace(/\)\s*\(/g, ')*(');
-    s = s.replace(/(x|y|theta|t)\s*(PI|E)/gi, '$1*$2');
-    s = s.replace(/(PI|E)\s*(x|y|theta|t)/gi, '$1*$2');
+    s = s.replace(/(\d)\s*(x|y|theta|t|PI|E|\()/gi, '$1*$2');          // رقم قبل متغير/قوس
+    s = s.replace(/(x|y|theta|t|PI|E|\))\s*(\d|\()/gi, '$1*$2');        // متغير/قوس قبل رقم/قوس
+    s = s.replace(new RegExp(`(\\d|x|y|theta|t|PI|E)\\s*${FN}`, 'gi'), '$1*$2'); // قبل دالة
+    s = s.replace(new RegExp(`\\)\\s*${FN}`, 'gi'), ')*$1');            // ) قبل دالة
+    s = s.replace(/\)\s*\(/g, ')*(');                                   // )(
+    s = s.replace(/(x|y|theta|t)\s*(PI|E)/gi, '$1*$2');                 // xPI
+    s = s.replace(/(PI|E)\s*(x|y|theta|t)/gi, '$1*$2');                 // PIx
 
     return s.replace(/\s+/g, ' ').trim();
   }
 
-  const containsY = (s) => /\by\b/i.test(String(s));
+  const containsY = s => /\by\b/i.test(String(s));
+  const sideIsY = raw => /^y$/i.test(preprocessBasic(raw).trim());
 
-  // عزل y خطيًا إن أمكن (مثل: 2*x = y + 1 -> y = 2*x - 1)
+  /* ============ محاولة عزل y جبريًا إن كانت خطية ============ */
   function tryLinearSolveForY(lhsRaw, rhsRaw){
-  const L0 = preprocessBasic(lhsRaw);
-  const R0 = preprocessBasic(rhsRaw);
+    const L0 = preprocessBasic(lhsRaw);
+    const R0 = preprocessBasic(rhsRaw);
 
-  // تحاول استخراج y صريحًا إذا كانت المعادلة خطّية في y (درجة 1)
-  // "side" هو الطرف الذي يحتوي y، و "other" هو الطرف المقابل (يجب ألا يحتوي y)
-  function solve(side, other){
-    if (containsY(other)) return null; // الطرف المقابل يجب ألا يحوي y
+    function solve(side, other){
+      if (containsY(other)) return null; // الطرف المقابل يجب ألا يحوي y
+      let m;
 
-    let m;
-
-    // 1) a(x)*y ± b(x)      => y = (other ∓ b)/a
-    m = side.match(/^(.+?)\*?y\s*([+\-])\s*(.+)$/i);
-    if (m && !containsY(m[1]) && !containsY(m[3])) {
-      const a = m[1].trim(), op = m[2], b = m[3].trim();
-      const numer = (op === '+') ? `(${other})-(${b})` : `(${other})+(${b})`;
-      return `(${numer})/(${a})`;
-    }
-
-    // 2) y ± b(x)           => y = other ∓ b
-    m = side.match(/^y\s*([+\-])\s*(.+)$/i);
-    if (m && !containsY(m[2])) {
-      const op = m[1], b = m[2].trim();
-      return (op === '+') ? `(${other})-(${b})` : `(${other})+(${b})`;
-    }
-
-    // 3) a(x)*y             => y = other / a
-    m = side.match(/^(.+?)\*?y$/i);
-    if (m && !containsY(m[1])) {
-      const a = m[1].trim();
-      return `(${other})/(${a})`;
-    }
-
-    // 4) y فقط              => y = other
-    if (/^y$/i.test(side)) return `${other}`;
-
-    // 5) other ± y          => other + y = RHS  => y = RHS - other
-    //                         other - y = RHS  => y = other - RHS
-    m = side.match(/^(.+)\s*([+\-])\s*y$/i);
-    if (m && !containsY(m[1])) {
-      const otherOnSide = m[1].trim();
-      const op = m[2];
-      // side = otherOnSide (+|-) y
-      // إذا side = otherOnSide + y  => y = other - otherOnSide
-      // إذا side = otherOnSide - y  => y = otherOnSide - other
-      return (op === '+')
-        ? `(${other})-(${otherOnSide})`
-        : `(${otherOnSide})-(${other})`;
-    }
-
-    // 6) other ± a(x)*y     => other + a*y = RHS => y = (RHS - other)/a
-    //                         other - a*y = RHS => y = (other - RHS)/a
-    m = side.match(/^(.+)\s*([+\-])\s*(.+?)\*?y$/i);
-    if (m && !containsY(m[1]) && !containsY(m[3])) {
-      const otherOnSide = m[1].trim();
-      const op = m[2];
-      const a = m[3].trim();
-      if (op === '+') {
-        // other + a*y = RHS  -> a*y = RHS - other  -> y = (RHS - other)/a
-        return `((${other})-(${otherOnSide}))/(${a})`;
-      } else {
-        // other - a*y = RHS  -> -a*y = RHS - other -> y = (other - RHS)/a
-        return `((${otherOnSide})-(${other}))/(${a})`;
+      // a(x)*y ± b(x)  => y = (other ∓ b)/a
+      m = side.match(/^(.+?)\*?y\s*([+\-])\s*(.+)$/i);
+      if (m && !containsY(m[1]) && !containsY(m[3])) {
+        const a=m[1].trim(), op=m[2], b=m[3].trim();
+        const num = op==='+' ? `(${other})-(${b})` : `(${other})+(${b})`;
+        return `(${num})/(${a})`;
       }
+      // y ± b(x)       => y = other ∓ b
+      m = side.match(/^y\s*([+\-])\s*(.+)$/i);
+      if (m && !containsY(m[2])) {
+        const op=m[1], b=m[2].trim();
+        return op==='+' ? `(${other})-(${b})` : `(${other})+(${b})`;
+      }
+      // a(x)*y         => y = other / a
+      m = side.match(/^(.+?)\*?y$/i);
+      if (m && !containsY(m[1])) {
+        const a=m[1].trim();
+        return `(${other})/(${a})`;
+      }
+      // y فقط          => y = other
+      if (/^y$/i.test(side)) return `${other}`;
+
+      // other ± y      => y = RHS - other   أو  y = other - RHS
+      m = side.match(/^(.+)\s*([+\-])\s*y$/i);
+      if (m && !containsY(m[1])) {
+        const otherOnSide = m[1].trim(), op=m[2];
+        return (op === '+') ? `(${other})-(${otherOnSide})` : `(${otherOnSide})-(${other})`;
+      }
+      // other ± a*y    => y = (RHS - other)/a أو y = (other - RHS)/a
+      m = side.match(/^(.+)\s*([+\-])\s*(.+?)\*?y$/i);
+      if (m && !containsY(m[1]) && !containsY(m[3])) {
+        const otherOnSide = m[1].trim(), op=m[2], a=m[3].trim();
+        return (op === '+') ? `((${other})-(${otherOnSide}))/(${a})`
+                            : `((${otherOnSide})-(${other}))/(${a})`;
+      }
+      // -y ± b(x) أو other ± -y (حالات الإشارة السالبة أمام y)
+      m = side.match(/^-\s*y\s*([+\-])\s*(.+)$/i);
+      if (m && !containsY(m[2])) {
+        const op=m[1], b=m[2].trim();
+        // -y + b = other  => y = b - other
+        // -y - b = other  => y = -b - other
+        return (op === '+') ? `(${b})-(${other})` : `(-(${b}))-(${other})`;
+      }
+      m = side.match(/^(.+)\s*([+\-])\s*-\s*y$/i);
+      if (m && !containsY(m[1])) {
+        const otherOnSide=m[1].trim(), op=m[2];
+        // other - (-y) = other + y = other => y = other - otherOnSide
+        // other + (-y) = other - y = other => y = otherOnSide - other
+        return (op === '+') ? `(${otherOnSide})-(${other})` : `(${other})-(${otherOnSide})`;
+      }
+
+      return null;
     }
 
+    let js = solve(R0, L0); if (js) return js;
+    js = solve(L0, R0); if (js) return js;
     return null;
   }
 
-  // جرّب عندما يكون y في الطرف الأيمن
-  let js = solve(R0, L0);
-  if (js) return js;
-
-  // جرّب عندما يكون y في الطرف الأيسر
-  js = solve(L0, R0);
-  if (js) return js;
-
-  return null;
-}
-
-  const sideIsY = (raw) => /^y$/i.test(preprocessBasic(raw).trim());
-
-  // استخراج مجال { ... }
+  /* ============ مجال الإدخال { ... } ============ */
   function extractDomain(raw){
     const m = raw.match(/\{([^}]*)\}/);
     if(!m) return {text: raw, domain: null};
     const inside = preprocessBasic(m[1]);
-    let dom = {xmin: null, xmax: null, ymin: null, ymax: null, tmin: null, tmax: null, thmin:null, thmax:null};
+    let dom = {xmin:null,xmax:null,ymin:null,ymax:null,tmin:null,tmax:null,thmin:null,thmax:null};
     let r;
-    if(r = inside.match(/([\-+*/().,x0-9EPI ]*?)<=?x<=?([\-+*/().,x0-9EPI ]*?)/i)){
-      dom.xmin = r[1].trim(); dom.xmax = r[2].trim();
-    } else if(r = inside.match(/x\s*in\s*\[([^,]+),([^\]]+)\]/i)){
-      dom.xmin = r[1].trim(); dom.xmax = r[2].trim();
-    }
-    if(r = inside.match(/([\-+*/().,x0-9EPI ]*?)<=?y<=?([\-+*/().,x0-9EPI ]*?)/i)){
-      dom.ymin = r[1].trim(); dom.ymax = r[2].trim();
-    } else if(r = inside.match(/y\s*in\s*\[([^,]+),([^\]]+)\]/i)){
-      dom.ymin = r[1].trim(); dom.ymax = r[2].trim();
-    }
-    if(r = inside.match(/([\-+*/().,t0-9EPI ]*?)<=?t<=?([\-+*/().,t0-9EPI ]*?)/i)){
-      dom.tmin = r[1].trim(); dom.tmax = r[2].trim();
-    } else if(r = inside.match(/t\s*in\s*\[([^,]+),([^\]]+)\]/i)){
-      dom.tmin = r[1].trim(); dom.tmax = r[2].trim();
-    }
-    if(r = inside.match(/([\-+*/().,0-9EPI ]*?)<=?(theta|ϴ|θ)<=?([\-+*/().,0-9EPI ]*?)/i)){
-      dom.thmin = r[1].trim(); dom.thmax = r[3].trim();
-    } else if(r = inside.match(/(theta|ϴ|θ)\s*in\s*\[([^,]+),([^\]]+)\]/i)){
-      dom.thmin = r[2].trim(); dom.thmax = r[3].trim();
-    }
+    if(r = inside.match(/([\-+*/().,x0-9EPI ]*?)<=?x<=?([\-+*/().,x0-9EPI ]*?)/i)){ dom.xmin=r[1].trim(); dom.xmax=r[2].trim(); }
+    else if(r = inside.match(/x\s*in\s*\[([^,]+),([^\]]+)\]/i)){ dom.xmin=r[1].trim(); dom.xmax=r[2].trim(); }
+    if(r = inside.match(/([\-+*/().,x0-9EPI ]*?)<=?y<=?([\-+*/().,x0-9EPI ]*?)/i)){ dom.ymin=r[1].trim(); dom.ymax=r[2].trim(); }
+    else if(r = inside.match(/y\s*in\s*\[([^,]+),([^\]]+)\]/i)){ dom.ymin=r[1].trim(); dom.ymax=r[2].trim(); }
+    if(r = inside.match(/([\-+*/().,t0-9EPI ]*?)<=?t<=?([\-+*/().,t0-9EPI ]*?)/i)){ dom.tmin=r[1].trim(); dom.tmax=r[2].trim(); }
+    else if(r = inside.match(/t\s*in\s*\[([^,]+),([^\]]+)\]/i)){ dom.tmin=r[1].trim(); dom.tmax=r[2].trim(); }
+    if(r = inside.match(/([\-+*/().,0-9EPI ]*?)<=?(theta|ϴ|θ)<=?([\-+*/().,0-9EPI ]*?)/i)){ dom.thmin=r[1].trim(); dom.thmax=r[3].trim(); }
+    else if(r = inside.match(/(theta|ϴ|θ)\s*in\s*\[([^,]+),([^\]]+)\]/i)){ dom.thmin=r[2].trim(); dom.thmax=r[3].trim(); }
     const cleaned = raw.replace(/\{[^}]*\}/,'').trim();
     return {text: cleaned, domain: dom};
   }
 
-  // تحديد النوع + عزل y إن أمكن
+  /* ============ تحديد نوع الإدخال ============ */
   function normalizeExpr(raw){
     if(!raw) return {kind:'none'};
     const {text, domain} = extractDomain(raw);
@@ -326,36 +327,36 @@
       const [lhsRaw, rhsRaw] = s.split('=');
       const lhs = preprocessBasic(lhsRaw), rhs = preprocessBasic(rhsRaw);
 
-      // بارامترية
+      // بارامترية x(t)=..., y(t)=...
       if (/x\(t\)\s*=/.test(lhs+rhs) && /y\(t\)\s*=/.test(lhs+rhs)) {
         const pair = preprocessBasic(s);
         const mx = pair.match(/x\(t\)\s*=\s*([^,;]+)[,;]/i);
         const my = pair.match(/y\(t\)\s*=\s*([^,;]+)/i);
         if (mx && my) return { kind:'param', xt: mx[1].trim(), yt: my[1].trim(), domain };
       }
-      // قطبية
+      // قطبي r(θ)=...
       if (/r\((theta|ϴ|θ)\)\s*=/.test(lhs+rhs)) {
         const all = preprocessBasic(s);
         const mr = all.match(/r\((?:theta|ϴ|θ)\)\s*=\s*(.+)/i);
         if (mr) return { kind:'polar', rth: mr[1].trim(), domain };
       }
-      // y منفردة
+      // صريحة مباشرة
       if (sideIsY(lhs)) return { kind:'explicit', js: preprocessBasic(rhsRaw), domain };
       if (sideIsY(rhs)) return { kind:'explicit', js: preprocessBasic(lhsRaw), domain };
 
-      // عزل y خطيًا
+      // عزل خطي تلقائي
       const solved = tryLinearSolveForY(lhsRaw, rhsRaw);
       if (solved) return { kind:'explicit', js: preprocessBasic(solved), domain };
 
-      // ضمني
+      // ضمنية
       return { kind:'implicit', eq: preprocessBasic(s), domain };
     }
-
-    // بدون مساواة: y = expr(x)
+    // بدون مساواة → y = expr(x)
     return { kind:'explicit', js: preprocessBasic(s), domain };
   }
 
-  const isSafe = (expr) => /^[0-9+\-*/().,\sxa-zA-Z_]*\**[0-9+\-*/().,\sxa-zA-Z_]*$/.test(expr);
+  /* ============ التقييم في نطاق Math + منزلقات ============ */
+  const isSafe = expr => /^[0-9+\-*/().,\sxa-zA-Z_]*\**[0-9+\-*/().,\sxa-zA-Z_]*$/.test(expr);
 
   function buildScope(vars){
     const scope = Object.create(Math);
@@ -382,7 +383,7 @@
     return fn();
   }
 
-  // ======= تحويل =======
+  /* =================== تحويل الإحداثيات =================== */
   function worldToScreen(x,y){
     const r = devicePixelRatio||1, w=canvas.width, h=canvas.height;
     return { x:(w/2)+(x-state.centerX)*state.scale*r, y:(h/2)-(y-state.centerY)*state.scale*r };
@@ -394,17 +395,17 @@
 
   function resizeCanvas(){
     const r = devicePixelRatio||1; const rect = canvas.getBoundingClientRect();
-    canvas.width = Math.max(1, Math.floor(rect.width*r)); canvas.height = Math.max(1, Math.floor(rect.height*r));
+    canvas.width = Math.max(1, Math.floor(rect.width*r));
+    canvas.height = Math.max(1, Math.floor(rect.height*r));
     draw();
   }
   new ResizeObserver(resizeCanvas).observe(document.querySelector('.canvas-wrap'));
 
-  // ======= شبكة ومحاور =======
+  /* =================== شبكة ومحاور =================== */
   function niceStep(ppu){
     const target=110; const units=target/ppu; const p=Math.pow(10, Math.floor(Math.log10(units)));
     const c=[1,2,5,10].map(v=>v*p); let best=c[0]; for(const v of c) if(Math.abs(v-units)<Math.abs(best-units)) best=v; return best;
   }
-  const cssVar = (name) => getComputedStyle(document.documentElement).getPropertyValue(name);
 
   function drawGrid(){
     const r=devicePixelRatio||1, w=canvas.width, h=canvas.height;
@@ -443,7 +444,7 @@
     for(let y=Math.floor(br.y/step)*step; y<=tl.y; y+=step){ if(Math.abs(y)<1e-12) continue; const p=worldToScreen(0,y); ctx.fillText(toArabicDigits(y.toFixed(2).replace(/\.00$/,'')), sx0+6, p.y-2); }
   }
 
-  // ======= رسم المنحنيات =======
+  /* =================== رسم المنحنيات =================== */
   function adaptiveSampleX(f, left, right){
     const pts=[]; const maxDepth=12; const eps=1e-2; const N0=25;
     function rec(a,b,ya,yb,depth){
@@ -498,10 +499,10 @@
               const v00=val(x0,y0), v10=val(x1,y0), v01=val(x0,y1), v11=val(x1,y1);
               function lerp(a,b,ta,tb){ const t=ta/(ta-tb); return a + (b-a)*t; }
               const edges=[];
-              if(isFinite(v00)&&isFinite(v10) && (v00>0)!=(v10>0)){ const px=lerp(x0,x1,v00,v10), py=y0; edges.push([px,py]); }
-              if(isFinite(v10)&&isFinite(v11) && (v10>0)!=(v11>0)){ const px=x1, py=lerp(y0,y1,v10,v11); edges.push([px,py]); }
-              if(isFinite(v01)&&isFinite(v11) && (v01>0)!=(v11>0)){ const px=lerp(x0,x1,v01,v11), py=y1; edges.push([px,py]); }
-              if(isFinite(v00)&&isFinite(v01) && (v00>0)!=(v01>0)){ const px=x0, py=lerp(y0,y1,v00,v01); edges.push([px,py]); }
+              if(isFinite(v00)&&isFinite(v10) && (v00>0)!=(v10>0)){ edges.push([lerp(x0,x1,v00,v10), y0]); }
+              if(isFinite(v10)&&isFinite(v11) && (v10>0)!=(v11>0)){ edges.push([x1, lerp(y0,y1,v10,v11)]); }
+              if(isFinite(v01)&&isFinite(v11) && (v01>0)!=(v11>0)){ edges.push([lerp(x0,x1,v01,v11), y1]); }
+              if(isFinite(v00)&&isFinite(v01) && (v00>0)!=(v01>0)){ edges.push([x0, lerp(y0,y1,v00,v01)]); }
               if(edges.length===2){
                 const p0=worldToScreen(edges[0][0], edges[0][1]);
                 const p1=worldToScreen(edges[1][0], edges[1][1]);
@@ -531,7 +532,7 @@
     }
   }
 
-  // ======= تقاطعات تقريبية =======
+  /* =================== تقاطعات تقريبية =================== */
   function drawIntersections(){
     const dots=[];
     for(let i=0;i<state.polylines.length;i++){
@@ -559,7 +560,7 @@
     return null;
   }
 
-  // ======= مماس وميل (Alt+Click) — إصلاح =======
+  /* =================== مماس وميل (Alt+Click) =================== */
   function drawTangentAt(xw, yw) {
     let best = null, bestCurve = null, bestP = null;
     for (const pl of state.polylines) {
@@ -589,21 +590,27 @@
     const A = worldToScreen(xA, yA), B = worldToScreen(xB, yB), S = worldToScreen(bestP[0], bestP[1]);
     ctx.strokeStyle = '#f87171'; ctx.lineWidth = 2 * (devicePixelRatio || 1);
     ctx.beginPath(); ctx.moveTo(A.x, A.y); ctx.lineTo(B.x, B.y); ctx.stroke();
-    ctx.fillStyle = '#fda4af'; ctx.beginPath(); ctx.arc(S.x, S.y, 4*(devicePixelRatio||1), 0, Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.fillStyle = '#fda4af'; ctx.arc(S.x, S.y, 4*(devicePixelRatio||1), 0, Math.PI*2); ctx.fill();
 
     showTooltip(S.x, S.y, `النقطة الأقرب≈ (س=${bestP[0].toFixed(3)}, ص=${bestP[1].toFixed(3)}), الميل m≈ ${slope.toFixed(3)}`);
   }
 
-  function draw(){ drawGrid(); drawPolylines(); drawIntersections(); updateStatus(); }
+  /* =================== حلقة الرسم =================== */
+  function draw(){
+    drawGrid();
+    drawPolylines();
+    drawIntersections();
+    updateStatus();
+  }
 
-  // ======= قائمة الدوال =======
+  /* =================== واجهة الدوال/المنزلقات =================== */
   function renderExprList(){
     exprListEl.innerHTML='';
     state.expressions.forEach((ex,idx)=>{
       const card=document.createElement('div'); card.className='card expr-card'; card.dataset.id=ex.id;
       const sw=document.createElement('div'); sw.className='swatch'; sw.style.background=ex.color||COLORS[idx%COLORS.length]; card.appendChild(sw);
       const inp=document.createElement('input'); inp.className='input';
-      inp.placeholder='مثال: ص = س^2 | س - 5 = ص | س^2+ص^2 = 9 | س(t)=cos(t), ص(t)=sin(t) {0≤t≤2π} | r(θ)=1+cos(θ)';
+      inp.placeholder='مثال: ص = س^2 | س + ص = 4 | 2س + ص = 5 | س*ص = 1 | r(θ)=1+cos(θ)';
       inp.value=ex.text||'';
       inp.addEventListener('input', e=>{ ex.text=e.target.value; draw(); persistDeb(); }); card.appendChild(inp);
       const tools=document.createElement('div'); tools.className='mini';
@@ -618,7 +625,6 @@
   const markExprError = (id,msg) => { const card=exprListEl.querySelector(`[data-id="${id}"]`); if(card){ card.style.borderColor='#7f1d1d'; card.title=msg; } };
   const clearExprError = (id) => { const card=exprListEl.querySelector(`[data-id="${id}"]`); if(card){ card.style.borderColor='var(--border)'; card.title=''; } };
 
-  // ======= المنزلقات =======
   function renderSliders(){
     sliderListEl.innerHTML='';
     state.sliders.forEach((sl,idx)=>{
@@ -636,22 +642,18 @@
 
       const row2=document.createElement('div'); row2.className='range-row';
       const lmin=document.createElement('input'); lmin.className='input'; lmin.value=sl.min;
-      lmin.addEventListener('change',()=>{ sl.min=parseFloat(lmin.value)||sl.min; range.min=sl.min; });
-      row2.appendChild(lmin);
+      lmin.addEventListener('change',()=>{ sl.min=parseFloat(lmin.value)||sl.min; range.min=sl.min; }); row2.appendChild(lmin);
       const lstep=document.createElement('input'); lstep.className='input'; lstep.value=sl.step;
-      lstep.addEventListener('change',()=>{ sl.step=parseFloat(lstep.value)||sl.step; range.step=sl.step; });
-      row2.appendChild(lstep);
+      lstep.addEventListener('change',()=>{ sl.step=parseFloat(lstep.value)||sl.step; range.step=sl.step; }); row2.appendChild(lstep);
       const lmax=document.createElement('input'); lmax.className='input'; lmax.value=sl.max;
-      lmax.addEventListener('change',()=>{ sl.max=parseFloat(lmax.value)||sl.max; range.max=sl.max; });
-      row2.appendChild(lmax);
-
+      lmax.addEventListener('change',()=>{ sl.max=parseFloat(lmax.value)||sl.max; range.max=sl.max; }); row2.appendChild(lmax);
       const hint=document.createElement('div'); hint.className='muted'; hint.style.gridColumn='1/-1'; hint.textContent='الترتيب: [الحد الأدنى, الخطوة, الحد الأقصى]';
       card.appendChild(row2); card.appendChild(hint);
       sliderListEl.appendChild(card);
     });
   }
 
-  // ======= أحداث اللوحة =======
+  /* =================== تفاعل الماوس =================== */
   canvas.addEventListener('mousemove', (e)=>{
     const rect=canvas.getBoundingClientRect(); const r=devicePixelRatio||1;
     const sx=(e.clientX-rect.left)*r, sy=(e.clientY-rect.top)*r; const w=screenToWorld(sx,sy);
@@ -661,11 +663,62 @@
       state.centerX=state.dragStart.cx-dx; state.centerY=state.dragStart.cy+dy; draw();
     } else updateStatus();
   });
-  canvas.addEventListener('mousedown', ()=>{ state.dragging=true; state.dragStart={x:state.mouse.x,y:state.mouse.y,cx:state.centerX,cy:state.centerY}; });
+  canvas.addEventListener('mousedown', ()=>{
+    state.dragging=true; state.dragStart={x:state.mouse.x,y:state.mouse.y,cx:state.centerX,cy:state.centerY};
+  });
   window.addEventListener('mouseup', ()=>{ state.dragging=false; persistDeb(); });
-  canvas.addEventListener('wheel', (e)=>{ e.preventDefault(); const delta=-Math.sign(e.deltaY); zoomAt(delta>0?1.12:1/1.12, state.mouse.x, state.mouse.y); }, {passive:false});
+  canvas.addEventListener('wheel', (e)=>{
+    e.preventDefault();
+    const delta=-Math.sign(e.deltaY);
+    zoomAt(delta>0?1.12:1/1.12, state.mouse.x, state.mouse.y);
+  }, {passive:false});
   canvas.addEventListener('dblclick', ()=>{ resetView(); draw(); persistDeb(); });
   canvas.addEventListener('click', (e)=>{ if(e.altKey){ const w=screenToWorld(state.mouse.x, state.mouse.y); draw(); drawTangentAt(w.x,w.y); } });
+
+  /* =================== تفاعل اللمس (جوال) =================== */
+  canvas.addEventListener('touchstart', (e)=>{
+    if(e.touches.length===1){
+      const t=e.touches[0]; const rect=canvas.getBoundingClientRect(); const r=devicePixelRatio||1;
+      const sx=(t.clientX-rect.left)*r, sy=(t.clientY-rect.top)*r;
+      state.touch.active=true; state.touch.fingerCount=1;
+      state.dragging=true; state.dragStart={x:sx,y:sy,cx:state.centerX,cy:state.centerY};
+      // Double-tap لإعادة الضبط
+      const now=Date.now(); if(now - state.touch.lastTapTime < 300){ resetView(); draw(); persistDeb(); }
+      state.touch.lastTapTime = now;
+    }else if(e.touches.length===2){
+      state.touch.active=true; state.touch.fingerCount=2;
+      const [a,b]=e.touches;
+      const dist=Math.hypot(a.clientX-b.clientX, a.clientY-b.clientY);
+      state.touch.lastDist=dist;
+      state.dragging=false;
+      state.touch.lastMid = { x:(a.clientX+b.clientX)/2, y:(a.clientY+b.clientY)/2 };
+    }
+  }, {passive:true});
+
+  canvas.addEventListener('touchmove', (e)=>{
+    if(!state.touch.active) return;
+    if(state.touch.fingerCount===1 && e.touches.length===1){
+      const t=e.touches[0]; const rect=canvas.getBoundingClientRect(); const r=devicePixelRatio||1;
+      const sx=(t.clientX-rect.left)*r, sy=(t.clientY-rect.top)*r;
+      const dx=(sx-state.dragStart.x)/(state.scale*r);
+      const dy=(sy-state.dragStart.y)/(state.scale*r);
+      state.centerX=state.dragStart.cx-dx; state.centerY=state.dragStart.cy+dy; draw();
+    }else if(e.touches.length===2){
+      const [a,b]=e.touches;
+      const dist=Math.hypot(a.clientX-b.clientX, a.clientY-b.clientY);
+      const factor = Math.pow(dist / (state.touch.lastDist||dist), 1); // تكبير حسب النسبة
+      // التكبير حول منتصف الإصبعين
+      const rect=canvas.getBoundingClientRect(); const r=devicePixelRatio||1;
+      const midSx = ((a.clientX+b.clientX)/2 - rect.left)*r;
+      const midSy = ((a.clientY+b.clientY)/2 - rect.top)*r;
+      zoomAt(factor, midSx, midSy);
+      state.touch.lastDist=dist;
+    }
+  }, {passive:true});
+
+  window.addEventListener('touchend', ()=>{
+    state.touch.active=false; state.dragging=false; state.touch.fingerCount=0; persistDeb();
+  }, {passive:true});
 
   function zoomAt(factor, sx, sy){
     const before=screenToWorld(sx,sy);
@@ -674,7 +727,11 @@
     state.centerX += (before.x-after.x); state.centerY += (before.y-after.y); draw();
   }
 
-  // ======= أزرار =======
+  /* =================== أزرار عامة / قائمة الجوال =================== */
+  document.getElementById('btnDrawer').onclick=()=>{
+    document.getElementById('sidebar').classList.toggle('open');
+  };
+
   document.getElementById('btnAdd').onclick=()=>{ state.expressions.push({ id:uid(), color: COLORS[state.expressions.length%COLORS.length], text:'', visible:true }); renderExprList(); };
   document.getElementById('btnAddSlider').onclick=()=>{ state.sliders.push({ name:`a${state.sliders.length+1}`, min:-5, max:5, step:0.1, value:1 }); renderSliders(); draw(); };
   document.getElementById('btnExport').onclick=()=>{ const url=canvas.toDataURL('image/png'); const a=document.createElement('a'); a.href=url; a.download='graph.png'; a.click(); };
@@ -686,7 +743,7 @@
   document.getElementById('btnLoad').onclick=()=>{ document.getElementById('fileLoader').click(); };
   document.getElementById('fileLoader').addEventListener('change', (e)=>{ const f=e.target.files[0]; if(!f) return; const rd=new FileReader(); rd.onload=()=>{ try{ const obj=JSON.parse(rd.result); deserialize(obj); renderExprList(); renderSliders(); draw(); persistDeb(); }catch(err){ alert('ملف غير صالح'); } }; rd.readAsText(f); });
 
-  // تبديل المظهر: نضيف/نزيل كلاس light على <html> (و body للوراثة)
+  // تبديل المظهر: كلاس light على <html> و <body> (توريث متغيّرات CSS)
   document.getElementById('btnTheme').onclick = () => {
     const html = document.documentElement;
     const toLight = !html.classList.contains('light');
@@ -695,27 +752,25 @@
     draw(); persistDeb();
   };
 
-  // ======= حالة/مشاركة =======
+  /* =================== الحالة / المشاركة =================== */
   function updateStatus(){ statusEl.textContent = `س = ${toArabicDigits(state.mouse.wx.toFixed(3))}, ص = ${toArabicDigits(state.mouse.wy.toFixed(3))} | مقياس: 1u ≈ ${Math.round(state.scale)}px`; }
   function flash(msg){ const old=statusEl.textContent; statusEl.textContent=msg; setTimeout(()=>statusEl.textContent=old, 1200); }
 
-  function serialize(){ return { v:3, cx:state.centerX, cy:state.centerY, sc:state.scale, theme:state.theme, expr: state.expressions.map(e=>({t:e.text,c:e.color,v:!!e.visible})), sliders: state.sliders }; }
+  function serialize(){ return { v:4, cx:state.centerX, cy:state.centerY, sc:state.scale, theme:state.theme, expr: state.expressions.map(e=>({t:e.text,c:e.color,v:!!e.visible})), sliders: state.sliders }; }
   function deserialize(o){
     if(!o) return;
     if(typeof o.cx==='number') state.centerX=o.cx;
     if(typeof o.cy==='number') state.centerY=o.cy;
     if(typeof o.sc==='number') state.scale=o.sc;
-
     const isLight = o.theme === 'light';
     [document.documentElement, document.body].forEach(el => el.classList.toggle('light', isLight));
     state.theme = isLight ? 'light' : 'dark';
-
     if(Array.isArray(o.expr))
       state.expressions = o.expr.map((it,i)=>({id:uid(), text:it.t||'', color:it.c||COLORS[i%COLORS.length], visible: it.v!==false }));
     if(Array.isArray(o.sliders)) state.sliders = o.sliders;
   }
   function persist(){ const b64=btoa(unescape(encodeURIComponent(JSON.stringify(serialize())))); const url=new URL(location.href); url.hash='#g='+b64; history.replaceState(null,'',url); }
-  const persistDeb = debounce(persist, 300);
+  const persistDeb = debounce(persist, 250);
   function loadFromUrl(){ const m=(location.hash||'').match(/#g=([^&]+)/); if(!m) return false; try{ const obj=JSON.parse(decodeURIComponent(escape(atob(m[1])))); deserialize(obj); return true; }catch(e){ return false; } }
   function debounce(fn,ms){ let t; return (...a)=>{ clearTimeout(t); t=setTimeout(()=>fn(...a),ms); } }
 
@@ -725,9 +780,7 @@
   function init(){
     renderExprList();
     renderSliders();
-    if(!loadFromUrl()){
-      persist(); // اجعل الحالة الحالية أساسيّة في الرابط
-    }
+    if(!loadFromUrl()){ persist(); }
     resizeCanvas(); draw();
   }
   init();
