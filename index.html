@@ -3,599 +3,590 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>آلة رسم بياني (س/ص) – شبيه دِسموس</title>
+  <title>آلة رسم بياني (س/ص) – النسخة الموسّعة</title>
   <style>
     :root {
-      --bg: #0b1220;
-      --panel: #0f172a;
-      --panel-2: #111827;
-      --text: #e5e7eb;
-      --muted: #94a3b8;
-      --grid: #1f2937;
-      --grid-bold: #374151;
-      --axis: #cbd5e1;
-      --accent: #22d3ee;
-      --danger: #ef4444;
-      --ok: #22c55e;
+      /* الوضع الداكن (الافتراضي) */
+      --bg: #0b1220; --panel: #0f172a; --panel-2: #111827; --text: #e5e7eb;
+      --muted: #9fb2c9; --grid-sub: #162133; --grid: #20314b; --axis: #93c5fd;
+      --accent: #22d3ee; --danger: #ef4444; --ok: #22c55e; --warn: #f59e0b;
+      --chip: #0b1422; --border: #172133; --shadow: 0 1px 0 #0c111b, inset 0 1px 0 rgba(255,255,255,.02);
     }
+    .light {
+      /* الوضع الفاتح */
+      --bg: #f8fafc; --panel: #ffffff; --panel-2: #f3f4f6; --text: #0f172a;
+      --muted: #475569; --grid-sub: #e5e7eb; --grid: #cbd5e1; --axis: #1f2937;
+      --accent: #0ea5e9; --danger: #dc2626; --ok: #16a34a; --warn: #d97706;
+      --chip: #eef2ff; --border: #e5e7eb; --shadow: 0 1px 0 #e5e7eb, inset 0 1px 0 rgba(0,0,0,.02);
+    }
+
     * { box-sizing: border-box; }
     html, body { height: 100%; }
     body {
-      margin: 0;
-      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, "Noto Sans Arabic", "Helvetica Neue", Arial, "Apple Color Emoji", "Segoe UI Emoji";
-      color: var(--text);
-      background: linear-gradient(180deg, #0a0f1b, #0b1220);
+      margin: 0; background: var(--bg); color: var(--text);
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, "Noto Sans Arabic", Arial, "Apple Color Emoji", "Segoe UI Emoji";
       overflow: hidden;
     }
-    .app {
-      display: grid;
-      grid-template-columns: 360px 1fr;
-      gap: 0;
-      height: 100%;
-    }
-    .sidebar {
-      background: linear-gradient(180deg, var(--panel), var(--panel-2));
-      border-left: 1px solid #1f2937;
-      padding: 16px 14px 12px 14px;
-      overflow: auto;
-    }
-    .header {
-      display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 10px;
-    }
-    h1 { font-size: 16px; margin: 0; font-weight: 700; letter-spacing: 0.2px; }
+    .app { display: grid; grid-template-columns: 380px 1fr; height: 100%; }
+
+    .sidebar { background: linear-gradient(180deg, var(--panel), var(--panel-2)); border-left: 1px solid var(--border); padding: 14px; overflow: auto; }
+    .header { display: grid; grid-template-columns: 1fr auto; gap: 8px; align-items: center; margin-bottom: 8px; }
+    h1 { font-size: 18px; margin: 0; font-weight: 800; }
     .muted { color: var(--muted); font-size: 12px; }
-    .row { display: flex; gap: 8px; align-items: center; }
-    .btn {
-      background: #111827; color: var(--text); border: 1px solid #1f2937;
-      padding: 8px 10px; border-radius: 10px; cursor: pointer; font-size: 13px;
-      transition: transform .05s ease, background .2s ease, border-color .2s ease; user-select: none;
-    }
-    .btn:hover { background: #0b1325; border-color: #263245; }
-    .btn:active { transform: translateY(1px); }
-    .btn.primary { background: #0b1a2a; border-color: #1b3653; }
-    .btn.success { border-color: #1c4532; color: #a7f3d0; }
-    .btn.danger { border-color: #4c1d1d; color: #fecaca; }
 
-    .expr-list { display: flex; flex-direction: column; gap: 10px; margin-top: 10px; }
-    .card {
-      background: #0c1626; border: 1px solid #172133; border-radius: 14px;
-      padding: 10px; display: grid; grid-template-columns: 24px 1fr 28px; gap: 8px; align-items: center;
-      box-shadow: 0 1px 0 #0c111b, inset 0 1px 0 rgba(255,255,255,0.02);
-    }
-    .swatch { width: 16px; height: 16px; border-radius: 4px; border: 2px solid rgba(255,255,255,0.15); }
-    .input {
-      background: #0a1220; border: 1px solid #172133; color: var(--text); border-radius: 10px;
-      padding: 8px 10px; font-size: 14px; width: 100%; outline: none;
-    }
-    .input:focus { border-color: #254061; box-shadow: 0 0 0 3px rgba(59,130,246,0.2); }
+    .toolbar { display: flex; flex-wrap: wrap; gap: 8px; margin: 10px 0 12px; }
+    .btn { background: transparent; color: var(--text); border: 1px solid var(--border); padding: 8px 10px; border-radius: 10px; cursor: pointer; font-size: 13px; box-shadow: var(--shadow); }
+    .btn:hover { filter: brightness(1.05); }
+    .btn.primary { background: var(--chip); }
+    .btn.ok { color: #c7f9de; border-color: rgba(16,185,129,.35); background: rgba(16,185,129,.1); }
+    .btn.warn { color: #fff7db; border-color: rgba(245,158,11,.35); background: rgba(245,158,11,.12); }
+    .btn.danger { color: #ffe1e1; border-color: rgba(239,68,68,.35); background: rgba(239,68,68,.12); }
+
+    .section { margin-top: 10px; }
+    .section h3 { margin: 12px 0 8px; font-size: 14px; }
+
+    .expr-list, .slider-list { display: grid; gap: 10px; }
+    .card { background: var(--panel); border: 1px solid var(--border); border-radius: 14px; padding: 10px; box-shadow: var(--shadow); }
+    .expr-card { display: grid; grid-template-columns: 20px 1fr auto; gap: 8px; align-items: center; }
+    .swatch { width: 14px; height: 14px; border-radius: 4px; border: 2px solid rgba(0,0,0,.08); }
+    .input { width: 100%; background: var(--panel-2); border: 1px solid var(--border); color: var(--text); padding: 8px 10px; border-radius: 10px; font-size: 14px; outline: none; }
+
+    .mini { display: flex; gap: 6px; align-items: center; }
     .icon-btn { background: transparent; border: 0; color: var(--muted); cursor: pointer; font-size: 16px; }
-    .icon-btn:hover { color: #fca5a5; }
+    .icon-btn:hover { color: var(--danger); }
 
-    .toolbar { display: flex; gap: 8px; flex-wrap: wrap; margin: 8px 0 12px 0; }
-    .hint { font-size: 12px; color: var(--muted); margin-top: 6px; line-height: 1.6; }
+    .hint { font-size: 12px; color: var(--muted); line-height: 1.7; }
+    .badge { padding: 2px 8px; border-radius: 999px; border: 1px solid var(--border); background: var(--chip); }
 
-    .canvas-wrap { position: relative; }
+    .canvas-wrap { position: relative; background: radial-gradient(1200px 600px at 100% 0%, rgba(34,211,238,.04), transparent 60%); }
     canvas { display: block; width: 100%; height: 100%; background: transparent; }
-    .status {
-      position: absolute; bottom: 8px; left: 10px; background: rgba(2,6,23,0.6); backdrop-filter: blur(4px);
-      border: 1px solid #0b2033; border-radius: 10px; padding: 6px 10px; font-size: 12px; color: #cbd5e1;
-    }
-    .badge { padding: 2px 8px; border-radius: 999px; border: 1px solid #1f2937; background: #0b1422; }
-    .kbd { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace; padding: 0 6px; border: 1px solid #20314b; border-radius: 6px; background: #0a1220; }
 
-    .footer { margin-top: 10px; display: grid; gap: 6px; }
-    .small { font-size: 11px; color: var(--muted); }
+    .status { position: absolute; bottom: 8px; left: 10px; background: rgba(2,6,23,.55); border: 1px solid var(--border); border-radius: 10px; padding: 6px 10px; font-size: 12px; color: #cbd5e1; backdrop-filter: blur(4px); }
+    .light .status { background: rgba(255,255,255,.65); color: #0f172a; }
+
+    .floating { position: absolute; top: 8px; left: 12px; display: flex; gap: 6px; z-index: 5; }
+    .fab { background: var(--panel); border: 1px solid var(--border); color: var(--text); padding: 6px 10px; border-radius: 10px; cursor: pointer; font-size: 13px; }
+
+    .range-row { display: grid; grid-template-columns: 70px 1fr 70px 70px; gap: 6px; align-items: center; }
+    .slider-card { display: grid; gap: 8px; }
+
+    .tooltip { position: absolute; pointer-events: none; background: rgba(2,6,23,.9); color: #e2e8f0; border: 1px solid var(--border); padding: 6px 8px; border-radius: 8px; font-size: 12px; transform: translate(-50%, -120%); white-space: nowrap; }
+    .light .tooltip { background: rgba(255,255,255,.95); color: #0f172a; }
   </style>
 </head>
 <body>
-  <div class="app">
+  <div class="app" id="appRoot">
     <aside class="sidebar">
       <div class="header">
         <div>
-          <h1>آلة رسم بياني (س/ص)</h1>
-          <div class="muted">تطبيق صفحة واحدة – شبيه دِسموس</div>
+          <h1>آلة رسم بياني (س/ص) – موسّعة</h1>
+          <div class="muted">يدعم: منزلقات، مجالات، ضمني/بارامتري/قطبي، تقاطعات، مماس، حفظ/استيراد، وضع فاتح/داكن</div>
         </div>
-        <button id="btnReset" class="btn" title="إعادة الضبط">إعادة</button>
+        <div class="mini">
+          <button id="btnTheme" class="btn" title="الوضع الفاتح/الداكن">🌓 تبديل</button>
+        </div>
       </div>
 
       <div class="toolbar">
         <button id="btnAdd" class="btn primary">+ إضافة دالة</button>
-        <button id="btnExport" class="btn">تصدير صورة PNG</button>
+        <button id="btnAddSlider" class="btn">+ منزلق</button>
+        <button id="btnExport" class="btn">تصدير PNG</button>
+        <button id="btnSave" class="btn ok">حفظ إعدادات (JSON)</button>
+        <button id="btnLoad" class="btn warn">استيراد</button>
         <button id="btnShare" class="btn">مشاركة كرابط</button>
       </div>
 
       <div class="hint">
-        اكتب الدوال بدلالة <b>س</b> (مثال: <span class="badge">ص = س^2</span> أو <span class="badge">س^3 - 2*س</span>).<br/>
-        دوال متاحة: <span class="badge">sin</span> <span class="badge">cos</span> <span class="badge">tan</span> <span class="badge">abs</span> <span class="badge">sqrt</span> <span class="badge">exp</span> <span class="badge">log</span> <span class="badge">ln</span>.
-        يمكن استخدام العربية: <span class="badge">جا</span>/<span class="badge">جتا</span>/<span class="badge">ظا</span>/<span class="badge">جذر</span>.
+        <b>صيغ مدعومة:</b>
+        <div>
+          • صريحة: <span class="badge">ص = تعبير(س)</span> أو <span class="badge">تعبير(س) = ص</span>
+        </div>
+        <div>
+          • مجال: <span class="badge">{0 ≤ س ≤ 2π}</span> أو <span class="badge">{س ∈ [0,10]}</span>
+        </div>
+        <div>
+          • ضمنية: <span class="badge">س^2 + ص^2 = 9</span>
+        </div>
+        <div>
+          • بارامترية: <span class="badge">س(t)=cos(t), ص(t)=sin(t) {0 ≤ t ≤ 2π}</span>
+        </div>
+        <div>
+          • قطبية: <span class="badge">r(θ)=1+cos(θ) {0 ≤ θ ≤ 2π}</span>
+        </div>
+        <div>
+          • منزلقات: عرّف معاملات مثل <span class="badge">a</span>, <span class="badge">b</span> ثم أضِف منزلقًا لها.
+        </div>
+        دوال عربية: <span class="badge">جا</span>، <span class="badge">جتا</span>، <span class="badge">ظا</span>، <span class="badge">جذر</span>، <span class="badge">لن</span>، <span class="badge">لو</span>.
       </div>
 
-      <div id="exprList" class="expr-list"></div>
+      <div class="section">
+        <h3>الدوال</h3>
+        <div id="exprList" class="expr-list"></div>
+        <div class="mini" style="margin-top:6px; color:var(--muted); font-size:12px">
+          نصيحة: اضغط <b>Alt</b> على اللوحة ثم انقر لرسم <b>مماس</b> عند أقرب نقطة. سيتم إظهار <b>الميل</b> ونقطة التقاطع إن وُجدت.
+        </div>
+      </div>
 
-      <div class="footer">
-        <div class="small">التفاعل: سحب للف، عجلة الفأرة للتكبير/التصغير، نقرتان مزدوجتان لإعادة الضبط.</div>
-        <div class="small">المحاور: <b>س</b> و <b>ص</b>، مع شبكة وتدرّج ذكي.</div>
+      <div class="section">
+        <h3>المنزلقات</h3>
+        <div id="sliderList" class="slider-list"></div>
       </div>
     </aside>
 
     <main class="canvas-wrap">
+      <div class="floating">
+        <button id="btnZoomIn" class="fab">+ تكبير</button>
+        <button id="btnZoomOut" class="fab">− تصغير</button>
+        <button id="btnReset" class="fab">↺ إعادة العرض</button>
+      </div>
       <canvas id="canvas"></canvas>
-      <div id="status" class="status">س = 0, ص = 0 | مقياس: 1 وحدة ≈ 60px</div>
+      <div id="status" class="status">س = 0, ص = 0 | مقياس: 1u ≈ 60px</div>
+      <div id="tooltip" class="tooltip" style="display:none"></div>
+      <input id="fileLoader" type="file" accept="application/json" style="display:none" />
     </main>
   </div>
 
 <script>
 (() => {
-  // ======= أدوات ترميز/فك ترميز للأرقام العربية-الهندية =======
-  const AR_DIGITS = "٠١٢٣٤٥٦٧٨٩";
-  const EN_DIGITS = "0123456789";
-  function toArabicDigits(numStr) {
-    return String(numStr).replace(/[0-9]/g, d => AR_DIGITS[d]);
-  }
-  function toEnglishDigits(str) {
-    return String(str)
-      .replace(/[٠-٩]/g, ch => EN_DIGITS[AR_DIGITS.indexOf(ch)])
-      .replace(/،/g, ',');
-  }
+  // ======= أرقام عربية =======
+  const AR_DIGITS = "٠١٢٣٤٥٦٧٨٩"; const EN_DIGITS = "0123456789";
+  const toArabicDigits = (s) => String(s).replace(/[0-9]/g, d => AR_DIGITS[d]);
+  const toEnglishDigits = (s) => String(s).replace(/[٠-٩]/g, ch => EN_DIGITS[AR_DIGITS.indexOf(ch)]).replace(/،/g, ',');
 
-  // ======= تحويل الدوال العربية، وتطبيع التعبير =======
-  const arabicFns = [
-    [/\bجا\b/g, 'sin'],  // جا -> sin
-    [/\bجتا\b/g, 'cos'], // جتا -> cos
-    [/\bظا\b/g, 'tan'],  // ظا -> tan
-    [/\bجذر\b/g, 'sqrt'],
-    [/\bقيمة_?مطلقة\b/g, 'abs'],
-    [/\bلو\b/g, 'log'],  // لو (لوغاريتم عشري) -> log (سنعتبره log10 إذا كُتب log10)
-    [/\bلن\b/g, 'ln']    // لن -> ln (لوغاريتم طبيعي)
-  ];
+  // ======= أسماء دوال عربية -> Math =======
+  const arabicFns = [ [/\bجا\b/g,'sin'], [/\bجتا\b/g,'cos'], [/\bظا\b/g,'tan'], [/\bجذر\b/g,'sqrt'], [/\bقيمة_?مطلقة\b/g,'abs'], [/\bلو\b/g,'log'], [/\bلن\b/g,'ln'] ];
 
-  function normalizeExpr(input) {
-    if (!input) return '';
-    let s = String(input).trim();
-    // إذا كتب المستخدم ص = ... خذ يمين علامة =
-    const eqIdx = s.indexOf('=');
-    if (eqIdx !== -1) s = s.slice(eqIdx + 1);
-
-    s = toEnglishDigits(s);
-    // استبدال الحروف العربية والرموز الشائعة
-    s = s.replace(/[سx]/gi, 'x'); // نعتبر س أو x كلاهما متغيّر مستقل
-    s = s.replace(/π|باي/gi, 'PI');
-    s = s.replace(/هـ|\be\b/gi, 'E');
-    s = s.replace(/[÷]/g, '/').replace(/[×]/g, '*').replace(/\^/g, '**');
-
-    // توحيد أسماء الدوال العربية إلى إنجليزية
-    arabicFns.forEach(([re, rep]) => s = s.replace(re, rep));
-
-    // دعم ln كـ Math.log (لوغاريتم طبيعي)
-    s = s.replace(/\bln\(/g, 'log(');
-
-    // تنظيف المسافات
-    s = s.replace(/\s+/g, ' ').trim();
-    return s;
-  }
-
-  function isSafe(expr) {
-    // قائمة بيضاء بسيطة للأحرف المسموح بها بعد التطبيع
-    // لاحِظ أننا نسمح بالحروف الإنجليزية للدوال فقط.
-    const ok = /^[0-9+\-*/().,\sxa-zA-Z_]*\**[0-9+\-*/().,\sxa-zA-Z_]*$/;
-    return ok.test(expr);
-  }
-
-  function createEvaluator(expr) {
-    const js = normalizeExpr(expr);
-    if (!js || !isSafe(js)) {
-      throw new Error('تعبير غير صالح أو يحتوي على رموز غير مسموح بها');
-    }
-    // نوفّر دوال Math في النطاق. ندعم log10 صراحةً.
-    const src = `const log10 = (v) => Math.log10(v);\nwith (Math) { return (${js}); }`;
-    // نبني دالة f(x)
-    // تحذير: هذا مخصص للتجربة التعليمية ومع قائمة بيضاء بسيطة فقط.
-    return new Function('x', src);
-  }
-
-  // ======= حالة التطبيق =======
+  // ======= الحالة العامة =======
   const canvas = document.getElementById('canvas');
   const ctx = canvas.getContext('2d');
   const statusEl = document.getElementById('status');
+  const tooltip = document.getElementById('tooltip');
   const exprListEl = document.getElementById('exprList');
+  const sliderListEl = document.getElementById('sliderList');
+
+  const COLORS = ['#22d3ee','#a78bfa','#f472b6','#34d399','#f59e0b','#60a5fa','#ef4444','#10b981','#eab308','#06b6d4'];
+  function uid(){ return Math.random().toString(36).slice(2,9); }
 
   const state = {
-    centerX: 0,
-    centerY: 0,
-    // scale = كم بكسل لكل وحدة
-    scale: 60,
-    dragging: false,
-    dragStart: {x:0, y:0, cx:0, cy:0},
-    mouse: {x:0, y:0, wx:0, wy:0},
-    expressions: [
-      { id: uid(), color: '#22d3ee', text: 'ص = س^2', visible: true },
-    ],
+    centerX: 0, centerY: 0, scale: 60,
+    dragging:false, dragStart:{x:0,y:0,cx:0,cy:0},
+    mouse:{x:0,y:0,wx:0,wy:0},
+    theme: 'dark',
+    expressions: [ { id: uid(), color: COLORS[0], text: 'ص = س^2', visible: true } ],
+    sliders: [ /* {name:'a', min:-5, max:5, step:0.1, value:1} */ ],
+    polylines: [] // مصفوفات نقاط لرسم التقاطعات والمماس
   };
 
-  const COLORS = ['#22d3ee','#a78bfa','#f472b6','#34d399','#f59e0b','#60a5fa','#ef4444','#10b981'];
-
-  function uid() { return Math.random().toString(36).slice(2,9); }
-
-  // ======= تحويلات الإحداثيات =======
-  function worldToScreen(x, y) {
-    const ratio = window.devicePixelRatio || 1;
-    const w = canvas.width, h = canvas.height;
-    const sx = (w/2) + (x - state.centerX) * state.scale * ratio;
-    const sy = (h/2) - (y - state.centerY) * state.scale * ratio;
-    return { x: sx, y: sy };
+  // ======= تحويل/تطبيع نص =======
+  function preprocessBasic(s){
+    s = toEnglishDigits(String(s));
+    s = s.replace(/[سx]/gi,'x').replace(/[صy]/gi,'y');
+    s = s.replace(/π|باي/gi,'PI').replace(/هـ|\be\b/gi,'E');
+    s = s.replace(/[÷]/g,'/').replace(/[×]/g,'*').replace(/\^/g,'**');
+    arabicFns.forEach(([re,rep]) => s = s.replace(re,rep));
+    s = s.replace(/\bln\(/g,'log(');
+    return s.replace(/\s+/g,' ').trim();
   }
-  function screenToWorld(sx, sy) {
-    const ratio = window.devicePixelRatio || 1;
-    const w = canvas.width, h = canvas.height;
-    const x = (sx - w/2) / (state.scale * ratio) + state.centerX;
-    const y = -(sy - h/2) / (state.scale * ratio) + state.centerY;
-    return { x, y };
+  function sideIsY(raw){ const s = preprocessBasic(raw).trim(); return /^y$/i.test(s); }
+
+  function extractDomain(raw){
+    // يبحث عن { ... } ويرجع كائن مجال
+    // أمثلة: {0 <= x <= 2*PI}, {x in [0,10]}, {y between -2 and 3}
+    const m = raw.match(/\{([^}]*)\}/);
+    if(!m) return {text: raw, domain: null};
+    const inside = preprocessBasic(m[1]);
+    let dom = {xmin: null, xmax: null, ymin: null, ymax: null, tmin: null, tmax: null, thmin:null, thmax:null};
+    // x-range
+    let r;
+    if(r = inside.match(/([\-+*/().,x0-9EPI ]*?)<=?x<=?([\-+*/().,x0-9EPI ]*?)/i)){
+      dom.xmin = r[1].trim(); dom.xmax = r[2].trim();
+    } else if(r = inside.match(/x\s*in\s*\[([^,]+),([^\]]+)\]/i)){
+      dom.xmin = r[1].trim(); dom.xmax = r[2].trim();
+    }
+    // y-range
+    if(r = inside.match(/([\-+*/().,x0-9EPI ]*?)<=?y<=?([\-+*/().,x0-9EPI ]*?)/i)){
+      dom.ymin = r[1].trim(); dom.ymax = r[2].trim();
+    } else if(r = inside.match(/y\s*in\s*\[([^,]+),([^\]]+)\]/i)){
+      dom.ymin = r[1].trim(); dom.ymax = r[2].trim();
+    }
+    // t-range
+    if(r = inside.match(/([\-+*/().,t0-9EPI ]*?)<=?t<=?([\-+*/().,t0-9EPI ]*?)/i)){
+      dom.tmin = r[1].trim(); dom.tmax = r[2].trim();
+    } else if(r = inside.match(/t\s*in\s*\[([^,]+),([^\]]+)\]/i)){
+      dom.tmin = r[1].trim(); dom.tmax = r[2].trim();
+    }
+    // theta-range
+    if(r = inside.match(/([\-+*/().,0-9EPI ]*?)<=?(theta|ϴ|θ)<=?([\-+*/().,0-9EPI ]*?)/i)){
+      dom.thmin = r[1].trim(); dom.thmax = r[3].trim();
+    } else if(r = inside.match(/(theta|ϴ|θ)\s*in\s*\[([^,]+),([^\]]+)\]/i)){
+      dom.thmin = r[2].trim(); dom.thmax = r[3].trim();
+    }
+    const cleaned = raw.replace(/\{[^}]*\}/,'').trim();
+    return {text: cleaned, domain: dom};
   }
 
-  // ======= إعداد اللوحة =======
-  function resizeCanvas() {
-    const ratio = window.devicePixelRatio || 1;
-    const rect = canvas.getBoundingClientRect();
-    canvas.width = Math.max(1, Math.floor(rect.width * ratio));
-    canvas.height = Math.max(1, Math.floor(rect.height * ratio));
+  function normalizeExpr(raw){
+    if(!raw) return {kind:'none'};
+    // 1) افصل المجال بين {}
+    const {text, domain} = extractDomain(raw);
+    let s = String(text).trim();
+
+    // 2) حدد النوع
+    const hasEq = s.includes('=');
+    if(hasEq){
+      const [lhsRaw, rhsRaw] = s.split('=');
+      const lhs = preprocessBasic(lhsRaw), rhs = preprocessBasic(rhsRaw);
+
+      // بارامترية: x(t)=..., y(t)=...
+      if(/x\(t\)\s*=/.test(lhs+rhs) && /y\(t\)\s*=/.test(lhs+rhs)){
+        // صيغة: x(t)=..., y(t)=...
+        const pair = preprocessBasic(s);
+        const mx = pair.match(/x\(t\)\s*=\s*([^,;]+)[,;]/i);
+        const my = pair.match(/y\(t\)\s*=\s*([^,;]+)/i);
+        if(mx && my){ return {kind:'param', xt: mx[1].trim(), yt: my[1].trim(), domain}; }
+      }
+
+      // قطبية: r(θ)=...
+      if(/r\((theta|ϴ|θ)\)\s*=/.test(lhs+rhs)){
+        const all = preprocessBasic(s);
+        const mr = all.match(/r\((?:theta|ϴ|θ)\)\s*=\s*(.+)/i);
+        if(mr){ return {kind:'polar', rth: mr[1].trim(), domain}; }
+      }
+
+      // صريحة: y على طرف واحد منفردة
+      if(sideIsY(lhs)) return {kind:'explicit', js: preprocessBasic(rhs), domain};
+      if(sideIsY(rhs)) return {kind:'explicit', js: preprocessBasic(lhs), domain};
+
+      // ضمنية عامة
+      return {kind:'implicit', eq: preprocessBasic(s), domain};
+    }
+
+    // بدون يساوي: اعتبرها صريحة y = expr(x)
+    return {kind:'explicit', js: preprocessBasic(s), domain};
+  }
+
+  function isSafe(expr){
+    return /^[0-9+\-*/().,\sxa-zA-Z_]*\**[0-9+\-*/().,\sxa-zA-Z_]*$/.test(expr);
+  }
+
+  function buildScope(vars){
+    // يبني كائن نطاق للتقييم يتضمن Math + منزلقات + ثوابت
+    const scope = Object.create(Math);
+    scope.log10 = (v)=>Math.log10(v);
+    scope.PI = Math.PI; scope.E = Math.E;
+    // المتغيّرات من المنزلقات
+    for(const sl of state.sliders){ scope[sl.name] = sl.value; }
+    // متغيّرات إضافية من vars
+    if(vars) for(const k of Object.keys(vars)) scope[k] = vars[k];
+    return scope;
+  }
+
+  function makeFn1(js){
+    if(!js || !isSafe(js)) throw new Error('تعبير غير صالح');
+    const src = `with(this){ return (${js}); }`;
+    return Function('x', src).bind(buildScope());
+  }
+  function makeFn2(js){
+    // دالة بمتحوّلين x,y
+    if(!js || !isSafe(js)) throw new Error('تعبير غير صالح');
+    const src = `with(this){ return (${js}); }`;
+    return Function('x','y', src).bind(buildScope());
+  }
+  function evalInScope(expr, extra){
+    const s = preprocessBasic(expr);
+    const fn = Function(`with(this){ return (${s}); }`).bind(buildScope(extra));
+    return fn();
+  }
+
+  // ======= تحويل الإحداثيات =======
+  function worldToScreen(x,y){
+    const r = devicePixelRatio||1, w=canvas.width, h=canvas.height;
+    return { x:(w/2)+(x-state.centerX)*state.scale*r, y:(h/2)-(y-state.centerY)*state.scale*r };
+  }
+  function screenToWorld(sx,sy){
+    const r = devicePixelRatio||1, w=canvas.width, h=canvas.height;
+    return { x:(sx-w/2)/(state.scale*r)+state.centerX, y:-(sy-h/2)/(state.scale*r)+state.centerY };
+  }
+
+  function resizeCanvas(){
+    const r = devicePixelRatio||1; const rect = canvas.getBoundingClientRect();
+    canvas.width = Math.max(1, Math.floor(rect.width*r)); canvas.height = Math.max(1, Math.floor(rect.height*r));
     draw();
   }
-  window.addEventListener('resize', resizeCanvas);
+  new ResizeObserver(resizeCanvas).observe(document.querySelector('.canvas-wrap'));
 
-  // ======= رسم الشبكة والمحاور =======
-  function niceStep(pixelsPerUnit) {
-    // اختيار خطوة مناسبة للتدرّج بحسب المقياس
-    // الهدف ~ كل 90-130 بكسل خط رئيسي
-    const targetPx = 110;
-    const units = targetPx / pixelsPerUnit;
-    const pow10 = Math.pow(10, Math.floor(Math.log10(units)));
-    const candidates = [1, 2, 5, 10];
-    let best = pow10;
-    for (const c of candidates) {
-      const v = c * pow10;
-      if (Math.abs(v - units) < Math.abs(best - units)) best = v;
-    }
-    return best;
+  // ======= شبكة ومحاور =======
+  function niceStep(ppu){
+    const target=110; const units=target/ppu; const p=Math.pow(10, Math.floor(Math.log10(units)));
+    const c=[1,2,5,10].map(v=>v*p); let best=c[0]; for(const v of c) if(Math.abs(v-units)<Math.abs(best-units)) best=v; return best;
   }
 
-  function drawGrid() {
-    const ratio = window.devicePixelRatio || 1;
-    const w = canvas.width, h = canvas.height;
-    const s = state.scale * ratio;
+  function drawGrid(){
+    const r=devicePixelRatio||1, w=canvas.width, h=canvas.height, s=state.scale*r;
+    ctx.clearRect(0,0,w,h);
+    // خلفية
+    ctx.fillStyle = getComputedStyle(document.body).getPropertyValue('--bg');
+    ctx.fillRect(0,0,w,h);
 
-    ctx.clearRect(0, 0, w, h);
-
-    // خلفية خفيفة
-    ctx.fillStyle = '#0a0f1b';
-    ctx.fillRect(0, 0, w, h);
-
-    // حساب خطوة رئيسية وفرعية
     const step = niceStep(state.scale);
-    const subStep = step / 5;
+    const sub = step/5; const tl = screenToWorld(0,0), br = screenToWorld(w,h);
 
-    // حدود العالم المرئي
-    const tl = screenToWorld(0, 0);
-    const br = screenToWorld(w, h);
-
-    // خطوط فرعية
-    ctx.lineWidth = 1;
-    ctx.strokeStyle = '#162133';
-    ctx.beginPath();
-    for (let x = Math.floor((tl.x)/subStep)*subStep; x <= br.x; x += subStep) {
-      const sx = worldToScreen(x, 0).x;
-      ctx.moveTo(sx+0.5, 0); ctx.lineTo(sx+0.5, h);
-    }
-    for (let y = Math.floor((br.y)/subStep)*subStep; y <= tl.y; y += subStep) {
-      const sy = worldToScreen(0, y).y;
-      ctx.moveTo(0, sy+0.5); ctx.lineTo(w, sy+0.5);
-    }
+    // فرعية
+    ctx.lineWidth=1; ctx.strokeStyle=getComputedStyle(document.body).getPropertyValue('--grid-sub'); ctx.beginPath();
+    for(let x=Math.floor(tl.x/sub)*sub; x<=br.x; x+=sub){ const sx=worldToScreen(x,0).x; ctx.moveTo(sx+.5,0); ctx.lineTo(sx+.5,h); }
+    for(let y=Math.floor(br.y/sub)*sub; y<=tl.y; y+=sub){ const sy=worldToScreen(0,y).y; ctx.moveTo(0,sy+.5); ctx.lineTo(w,sy+.5); }
     ctx.stroke();
 
-    // خطوط رئيسية
-    ctx.strokeStyle = '#20314b';
-    ctx.beginPath();
-    for (let x = Math.floor((tl.x)/step)*step; x <= br.x; x += step) {
-      const sx = worldToScreen(x, 0).x;
-      ctx.moveTo(sx+0.5, 0); ctx.lineTo(sx+0.5, h);
-    }
-    for (let y = Math.floor((br.y)/step)*step; y <= tl.y; y += step) {
-      const sy = worldToScreen(0, y).y;
-      ctx.moveTo(0, sy+0.5); ctx.lineTo(w, sy+0.5);
-    }
+    // رئيسية
+    ctx.strokeStyle=getComputedStyle(document.body).getPropertyValue('--grid'); ctx.beginPath();
+    for(let x=Math.floor(tl.x/step)*step; x<=br.x; x+=step){ const sx=worldToScreen(x,0).x; ctx.moveTo(sx+.5,0); ctx.lineTo(sx+.5,h); }
+    for(let y=Math.floor(br.y/step)*step; y<=tl.y; y+=step){ const sy=worldToScreen(0,y).y; ctx.moveTo(0,sy+.5); ctx.lineTo(w,sy+.5); }
     ctx.stroke();
 
-    // المحورين س/ص
-    ctx.strokeStyle = '#93c5fd';
-    ctx.lineWidth = 1.5;
-    ctx.beginPath();
-    const sx0 = worldToScreen(0, 0).x; // محور ص (x=0)
-    ctx.moveTo(sx0+0.5, 0); ctx.lineTo(sx0+0.5, h);
-    const sy0 = worldToScreen(0, 0).y; // محور س (y=0)
-    ctx.moveTo(0, sy0+0.5); ctx.lineTo(w, sy0+0.5);
-    ctx.stroke();
+    // محاور
+    ctx.strokeStyle=getComputedStyle(document.body).getPropertyValue('--axis'); ctx.lineWidth=1.5; ctx.beginPath();
+    const sx0=worldToScreen(0,0).x, sy0=worldToScreen(0,0).y; ctx.moveTo(sx0+.5,0); ctx.lineTo(sx0+.5,h); ctx.moveTo(0,sy0+.5); ctx.lineTo(w,sy0+.5); ctx.stroke();
 
-    // وسم س وص
-    ctx.fillStyle = '#cbd5e1';
-    ctx.font = `${12*ratio}px system-ui, -apple-system, Segoe UI, Noto Sans Arabic, Arial`;
-    ctx.textAlign = 'right'; ctx.textBaseline = 'top';
-    ctx.fillText('س', Math.min(w-6, w-6), sy0 + 6);
-    ctx.textAlign = 'left'; ctx.textBaseline = 'bottom';
-    ctx.fillText('ص', sx0 + 6, Math.max(12, 12));
+    // تسميات
+    ctx.fillStyle = getComputedStyle(document.body).getPropertyValue('--axis');
+    ctx.font = `${12*r}px system-ui, -apple-system, Segoe UI, Noto Sans Arabic, Arial`;
+    ctx.textAlign='right'; ctx.textBaseline='top'; ctx.fillText('س', Math.min(w-6,w-6), sy0 + 6);
+    ctx.textAlign='left'; ctx.textBaseline='bottom'; ctx.fillText('ص', sx0 + 6, Math.max(12,12));
 
-    // أرقام التدريج (بالأرقام العربية)
-    ctx.fillStyle = '#9fb2c9';
-    ctx.textAlign = 'right'; ctx.textBaseline = 'top';
-    for (let x = Math.floor((tl.x)/step)*step; x <= br.x; x += step) {
-      if (Math.abs(x) < 1e-12) continue;
-      const p = worldToScreen(x, 0);
-      ctx.fillText(toArabicDigits(x.toFixed(2).replace(/\.00$/, '')), p.x - 4, sy0 + 6);
-    }
-    ctx.textAlign = 'left'; ctx.textBaseline = 'bottom';
-    for (let y = Math.floor((br.y)/step)*step; y <= tl.y; y += step) {
-      if (Math.abs(y) < 1e-12) continue;
-      const p = worldToScreen(0, y);
-      ctx.fillText(toArabicDigits(y.toFixed(2).replace(/\.00$/, '')), sx0 + 6, p.y - 2);
-    }
+    // أرقام
+    ctx.fillStyle=getComputedStyle(document.body).getPropertyValue('--muted');
+    ctx.textAlign='right'; ctx.textBaseline='top';
+    for(let x=Math.floor(tl.x/step)*step; x<=br.x; x+=step){ if(Math.abs(x)<1e-12) continue; const p=worldToScreen(x,0); ctx.fillText(toArabicDigits(x.toFixed(2).replace(/\.00$/,'')), p.x-4, sy0+6); }
+    ctx.textAlign='left'; ctx.textBaseline='bottom';
+    for(let y=Math.floor(br.y/step)*step; y<=tl.y; y+=step){ if(Math.abs(y)<1e-12) continue; const p=worldToScreen(0,y); ctx.fillText(toArabicDigits(y.toFixed(2).replace(/\.00$/,'')), sx0+6, p.y-2); }
   }
 
-  // ======= رسم الدوال =======
-  function drawFunctions() {
-    const ratio = window.devicePixelRatio || 1;
-    const w = canvas.width, h = canvas.height;
-    const left = screenToWorld(0, 0).x;
-    const right = screenToWorld(w, 0).x;
-
-    for (const [i, ex] of state.expressions.entries()) {
-      if (!ex.visible) continue;
-      let fn;
-      try { fn = createEvaluator(ex.text); }
-      catch (e) {
-        // إشارة خطأ في البطاقة إن وُجد
-        markExprError(ex.id, e.message);
-        continue;
+  // ======= رسم المنحنيات =======
+  function adaptiveSampleX(f, left, right){
+    // أخذ عينات تكيفي بسيط على [left,right]
+    const pts=[]; const maxDepth=12; const eps=1e-2; const N0=25;
+    function rec(a,b,ya,yb,depth){
+      const m=(a+b)/2; let ym=f(m); if(!isFinite(ya)) ya=f(a); if(!isFinite(yb)) yb=f(b);
+      if(!isFinite(ym) || depth>=maxDepth){ pts.push([a,ya],[b,yb]); return; }
+      const ylin=(ya+yb)/2; if(Math.abs(ym-ylin)<eps*(1+Math.abs(ym))){ pts.push([a,ya],[b,yb]); return; }
+      rec(a,m,ya,ym,depth+1); rec(m,b,ym,yb,depth+1);
+    }
+    let yL=f(left), yR=f(right); if(!isFinite(yL)||!isFinite(yR)){ // عيّنات أولية
+      const dx=(right-left)/N0; let x=left; let lastX=null,lastY=null;
+      for(let i=0;i<=N0;i++,x+=dx){ const y=f(x); if(isFinite(y)){ if(lastX!==null){ rec(lastX,x,lastY,y,0); } lastX=x; lastY=y; }
       }
-      clearExprError(ex.id);
+    } else rec(left,right,yL,yR,0);
+    // دمج وترتيب
+    pts.sort((a,b)=>a[0]-b[0]); const out=[]; let prev=null;
+    for(const p of pts){ if(!prev || p[0]!==prev[0]) out.push(p); prev=p; }
+    return out;
+  }
 
-      ctx.lineWidth = 2 * ratio;
-      ctx.strokeStyle = ex.color || COLORS[i % COLORS.length];
-      ctx.beginPath();
-      const steps = Math.min(2000, Math.max(400, Math.floor(canvas.width / 1.5)));
-      const dx = (right - left) / steps;
-      let penDown = false;
-      for (let j = 0; j <= steps; j++) {
-        const x = left + j * dx;
-        let y = fn(x);
-        if (!isFinite(y)) { penDown = false; continue; }
-        const p = worldToScreen(x, y);
-        if (!penDown) { ctx.moveTo(p.x, p.y); penDown = true; }
-        else { ctx.lineTo(p.x, p.y); }
-      }
-      ctx.stroke();
+  function drawPolylines(){
+    state.polylines.length=0;
+    const r=devicePixelRatio||1; const w=canvas.width; const viewL=screenToWorld(0,0).x, viewR=screenToWorld(w,0).x;
+    for(const [i,ex] of state.expressions.entries()){
+      if(!ex.visible) continue;
+      const spec = normalizeExpr(ex.text);
+      ctx.lineWidth=2*r; ctx.strokeStyle=ex.color||COLORS[i%COLORS.length];
+      ctx.beginPath(); let pen=false;
+      let poly=[];
+      try{
+        if(spec.kind==='explicit'){
+          const f = makeFn1(spec.js);
+          let L=viewL, R=viewR;
+          if(spec.domain && spec.domain.xmin) L = evalInScope(spec.domain.xmin);
+          if(spec.domain && spec.domain.xmax) R = evalInScope(spec.domain.xmax);
+          const pts = adaptiveSampleX(f, L, R);
+          for(const [x,y] of pts){ const p=worldToScreen(x,y); if(!isFinite(p.x)||!isFinite(p.y)) { pen=false; continue; } if(!pen){ ctx.moveTo(p.x,p.y); pen=true; } else ctx.lineTo(p.x,p.y); poly.push([x,y]); }
+        }
+        else if(spec.kind==='implicit'){
+          // Marching Squares بسيط
+          const tl=screenToWorld(0,0), br=screenToWorld(canvas.width, canvas.height);
+          const nx=60, ny=40; const dx=(br.x-tl.x)/nx, dy=(tl.y-br.y)/ny; // مقلوب لأن tl.y>br.y
+          const F = (()=>{ const eq = spec.eq.replace('=','-(')+')'; return makeFn2(eq); })();
+          function val(x,y){ const v=F(x,y); return isFinite(v)?v:NaN; }
+          ctx.strokeStyle=ex.color||COLORS[i%COLORS.length]; ctx.lineWidth=2*r;
+          for(let iy=0; iy<ny; iy++){
+            for(let ix=0; ix<nx; ix++){
+              const x0=tl.x+ix*dx, y0=tl.y-iy*dy; const x1=x0+dx, y1=y0-dy;
+              const v00=val(x0,y0), v10=val(x1,y0), v01=val(x0,y1), v11=val(x1,y1);
+              const s00=v00>0, s10=v10>0, s01=v01>0, s11=v11>0; const idx=(s00<<3)|(s10<<2)|(s01<<1)|s11;
+              // حالات أساسية: نرسم خط حيث يتبدّل الإشارة
+              function lerp(a,b,ta,tb){ const t=ta/(ta-tb); return a + (b-a)*t; }
+              function edgeX(y, xA,vA, xB,vB){ return lerp(xA,xB,vA,vB); }
+              function edgeY(x, yA,vA, yB,vB){ return lerp(yA,yB,vA,vB); }
+              const edges=[];
+              const E = [ [v00,v10, 'top'], [v10,v11,'right'], [v01,v11,'bottom'], [v00,v01,'left'] ];
+              const S = [ [x0,y0,x1,y0], [x1,y0,x1,y1], [x0,y1,x1,y1], [x0,y0,x0,y1] ];
+              // قراءه 4 قيم وحالات متعددة. سنعالج بالتحقق لكل ضلع إن كان يؤشر إلى تغيير إشارة
+              for(let e=0;e<4;e++){
+                const [xa,ya,xb,yb] = S[e]; const va=E[e][0], vb=E[e][1];
+                if(!isFinite(va) || !isFinite(vb)) continue; if((va>0)!=(vb>0)){
+                  // نقطة تقاطع
+                  let px,py; if(ya===yb){ // أفقي
+                    px = edgeX(xa, va, xb, vb); py = ya;
+                  } else { // عمودي
+                    py = edgeY(ya, va, yb, vb); px = xa;
+                  }
+                  edges.push([px,py]);
+                }
+              }
+              if(edges.length===2){ const p0=worldToScreen(edges[0][0], edges[0][1]); const p1=worldToScreen(edges[1][0], edges[1][1]); ctx.beginPath(); ctx.moveTo(p0.x,p0.y); ctx.lineTo(p1.x,p1.y); ctx.stroke(); poly.push(edges[0], edges[1]); }
+            }
+          }
+        }
+        else if(spec.kind==='param'){
+          const xt = Function('t', `with(this){return (${spec.xt});}`).bind(buildScope());
+          const yt = Function('t', `with(this){return (${spec.yt});}`).bind(buildScope());
+          let t0=0, t1=2*Math.PI; if(spec.domain){ if(spec.domain.tmin) t0=evalInScope(spec.domain.tmin,{t:0}); if(spec.domain.tmax) t1=evalInScope(spec.domain.tmax,{t:0}); }
+          const steps = 800; const dt=(t1-t0)/steps; for(let i=0;i<=steps;i++){ const t=t0+i*dt; const x=xt(t), y=yt(t); const p=worldToScreen(x,y); if(i===0) ctx.moveTo(p.x,p.y); else ctx.lineTo(p.x,p.y); poly.push([x,y]); }
+          ctx.stroke(); continue;
+        }
+        else if(spec.kind==='polar'){
+          const fr = Function('theta', `with(this){return (${spec.rth});}`).bind(buildScope());
+          let th0=0, th1=2*Math.PI; if(spec.domain){ if(spec.domain.thmin) th0=evalInScope(spec.domain.thmin,{theta:0}); if(spec.domain.thmax) th1=evalInScope(spec.domain.thmax,{theta:0}); }
+          const steps = 800; const d=(th1-th0)/steps; for(let i=0;i<=steps;i++){ const th=th0+i*d; const r0=fr(th); const x=r0*Math.cos(th), y=r0*Math.sin(th); const p=worldToScreen(x,y); if(i===0) ctx.moveTo(p.x,p.y); else ctx.lineTo(p.x,p.y); poly.push([x,y]); }
+          ctx.stroke(); continue;
+        }
+        ctx.stroke();
+      } catch(err){ markExprError(ex.id, err.message); continue; }
+      clearExprError(ex.id); state.polylines.push({id:ex.id,color:ctx.strokeStyle,points:poly});
     }
   }
 
-  function draw() {
-    drawGrid();
-    drawFunctions();
-    updateStatus();
+  // ======= تقاطعات تقريبية للمنحنيات المرسومة =======
+  function drawIntersections(){
+    const dots=[]; const tol=6; // بكسلات
+    function dist2(a,b){ const dx=a[0]-b[0], dy=a[1]-b[1]; return dx*dx+dy*dy; }
+    for(let i=0;i<state.polylines.length;i++){
+      for(let j=i+1;j<state.polylines.length;j++){
+        const A=state.polylines[i].points, B=state.polylines[j].points; if(A.length<2||B.length<2) continue;
+        for(let a=1;a<A.length;a++){
+          const a0=A[a-1], a1=A[a];
+          for(let b=1;b<B.length;b++){
+            const b0=B[b-1], b1=B[b];
+            const P = segInter(a0,a1,b0,b1); if(P){ const sp=worldToScreen(P[0],P[1]); dots.push([sp.x,sp.y]); }
+          }
+        }
+      }
+    }
+    // ارسم نقاط التقاطع
+    ctx.fillStyle = '#fef08a'; for(const d of dots){ ctx.beginPath(); ctx.arc(d[0],d[1], 4*(devicePixelRatio||1), 0, Math.PI*2); ctx.fill(); }
+  }
+  function segInter(p,q,r,s){ // تقاطع مقاطع خط
+    function cross(a,b,c){ return (b[0]-a[0])*(c[1]-a[1]) - (b[1]-a[1])*(c[0]-a[0]); }
+    function onSeg(a,b,p){ return Math.min(a[0],b[0])-1e-9<=p[0] && p[0]<=Math.max(a[0],b[0])+1e-9 && Math.min(a[1],b[1])-1e-9<=p[1] && p[1]<=Math.max(a[1],b[1])+1e-9; }
+    const d = cross(p,q,r), e = cross(p,q,s), f=cross(r,s,p), g=cross(r,s,q);
+    if((d===0&&e===0&&f===0&&g===0)) return null; // متوازية
+    if((d>0)!=(e>0) && (f>0)!=(g>0)){
+      const A=q[0]-p[0], B=r[0]-s[0], C=q[1]-p[1], D=r[1]-s[1], E=r[0]-p[0], F=r[1]-p[1];
+      const det=A*D-B*C; if(Math.abs(det)<1e-12) return null; const t=(E*D - B*F)/det; return [p[0]+t*A, p[1]+t*C];
+    }
+    return null;
   }
 
-  // ======= عناصر الواجهة (قائمة الدوال) =======
-  function renderExprList() {
-    exprListEl.innerHTML = '';
-    state.expressions.forEach((ex, idx) => {
-      const card = document.createElement('div');
-      card.className = 'card';
-      card.dataset.id = ex.id;
+  // ======= مماس وميل عند أقرب نقطة (Alt+Click) =======
+  function drawTangentAt(xw,yw){
+    // ابحث عن أقرب نقطة على أي polyline
+    let best=null; let bestCurve=null; for(const pl of state.polylines){ for(const P of pl.points){ const d=(P[0]-xw)**2+(P[1]-yw)**2; if(best===null||d<best){ best=d; bestCurve=pl; bestP=P; } } }
+    if(!bestCurve) return; const bestP = bestP || [xw,yw];
+    // اشتقاق عددي بسيط باستخدام جيران
+    const pts=bestCurve.points; let idx=pts.findIndex(p=>p===bestP); if(idx<0){ idx=pts.reduce((bi,p,i)=>{ const d=(p[0]-bestP[0])**2+(p[1]-bestP[1])**2; return d<(pts[bi][0]-bestP[0])**2+(pts[bi][1]-bestP[1])**2?i:bi; },0); }
+    const i0=Math.max(0,idx-1), i1=Math.min(pts.length-1, idx+1); const dx=pts[i1][0]-pts[i0][0], dy=pts[i1][1]-pts[i0][1]; if(Math.abs(dx)+Math.abs(dy)<1e-12) return;
+    const slope = dy/dx; // ميل المماس التقريبي
+    // ارسم المماس حول النقطة
+    const len=4; // وحدات
+    const xA=bestP[0]-len, yA=bestP[1]-slope*len; const xB=bestP[0]+len, yB=bestP[1]+slope*len;
+    const A=worldToScreen(xA,yA), B=worldToScreen(xB,yB), S=worldToScreen(bestP[0],bestP[1]);
+    ctx.strokeStyle='#f87171'; ctx.lineWidth=2*(devicePixelRatio||1); ctx.beginPath(); ctx.moveTo(A.x,A.y); ctx.lineTo(B.x,B.y); ctx.stroke();
+    ctx.fillStyle='#fda4af'; ctx.beginPath(); ctx.arc(S.x,S.y, 4*(devicePixelRatio||1), 0, Math.PI*2); ctx.fill();
+    showTooltip(S.x,S.y, `النقطة الأقرب≈ (س=${bestP[0].toFixed(3)}, ص=${bestP[1].toFixed(3)}), الميل m≈ ${slope.toFixed(3)}`);
+  }
 
-      const sw = document.createElement('div');
-      sw.className = 'swatch';
-      sw.style.background = ex.color || COLORS[idx % COLORS.length];
-      card.appendChild(sw);
+  function draw(){ drawGrid(); drawPolylines(); drawIntersections(); updateStatus(); }
 
-      const inp = document.createElement('input');
-      inp.className = 'input';
-      inp.placeholder = 'مثال: ص = س^2';
-      inp.value = ex.text || '';
-      inp.addEventListener('input', (e) => {
-        ex.text = e.target.value;
-        draw();
-        persistToUrlDebounced();
-      });
-      card.appendChild(inp);
+  // ======= قائمة الدوال =======
+  function renderExprList(){
+    exprListEl.innerHTML='';
+    state.expressions.forEach((ex,idx)=>{
+      const card=document.createElement('div'); card.className='card expr-card'; card.dataset.id=ex.id;
+      const sw=document.createElement('div'); sw.className='swatch'; sw.style.background=ex.color||COLORS[idx%COLORS.length]; card.appendChild(sw);
+      const inp=document.createElement('input'); inp.className='input'; inp.placeholder='مثال: ص = س^2 | س-5 = ص | س^2+ص^2=9 | س(t)=cos(t), ص(t)=sin(t) {0≤t≤2π} | r(θ)=1+cos(θ)'; inp.value=ex.text||'';
+      inp.addEventListener('input', e=>{ ex.text=e.target.value; draw(); persistDeb(); }); card.appendChild(inp);
+      const tools=document.createElement('div'); tools.className='mini';
+      const vis=document.createElement('input'); vis.type='checkbox'; vis.checked=ex.visible!==false; vis.title='إظهار/إخفاء'; vis.addEventListener('change',()=>{ ex.visible=vis.checked; draw(); persistDeb(); }); tools.appendChild(vis);
+      const del=document.createElement('button'); del.className='icon-btn'; del.title='حذف'; del.textContent='🗑️'; del.addEventListener('click',()=>{ state.expressions=state.expressions.filter(it=>it.id!==ex.id); renderExprList(); draw(); persistDeb(); }); tools.appendChild(del);
+      card.appendChild(tools); exprListEl.appendChild(card);
+    });
+  }
+  function markExprError(id,msg){ const card=exprListEl.querySelector(`[data-id="${id}"]`); if(!card) return; card.style.borderColor='#7f1d1d'; card.title=msg; }
+  function clearExprError(id){ const card=exprListEl.querySelector(`[data-id="${id}"]`); if(!card) return; card.style.borderColor='var(--border)'; card.title=''; }
 
-      const tools = document.createElement('div');
-      tools.style.display = 'flex';
-      tools.style.gap = '6px';
-      tools.style.alignItems = 'center';
+  // ======= المنزلقات =======
+  function renderSliders(){
+    sliderListEl.innerHTML='';
+    state.sliders.forEach((sl,idx)=>{
+      const card=document.createElement('div'); card.className='card slider-card'; card.dataset.name=sl.name;
+      const row=document.createElement('div'); row.className='range-row';
+      const name=document.createElement('input'); name.className='input'; name.style.width='100%'; name.value=sl.name; name.title='اسم المتغيّر'; name.addEventListener('change',()=>{ sl.name = name.value.trim(); draw(); persistDeb(); }); row.appendChild(name);
+      const range=document.createElement('input'); range.type='range'; range.min=sl.min; range.max=sl.max; range.step=sl.step; range.value=sl.value; range.addEventListener('input',()=>{ sl.value=parseFloat(range.value); val.value=sl.value; draw(); persistDeb(); }); row.appendChild(range);
+      const val=document.createElement('input'); val.className='input'; val.value=sl.value; val.style.textAlign='center'; val.addEventListener('change',()=>{ let v=parseFloat(val.value); if(isNaN(v)) v=sl.value; sl.value=v; range.value=v; draw(); persistDeb(); }); row.appendChild(val);
+      const del=document.createElement('button'); del.className='btn danger'; del.textContent='حذف'; del.onclick=()=>{ state.sliders.splice(idx,1); renderSliders(); draw(); persistDeb(); }; row.appendChild(del);
+      card.appendChild(row);
 
-      const vis = document.createElement('input');
-      vis.type = 'checkbox';
-      vis.checked = ex.visible !== false;
-      vis.title = 'إظهار/إخفاء';
-      vis.addEventListener('change', () => { ex.visible = vis.checked; draw(); persistToUrlDebounced(); });
-      tools.appendChild(vis);
-
-      const del = document.createElement('button');
-      del.className = 'icon-btn';
-      del.title = 'حذف';
-      del.innerHTML = '🗑️';
-      del.addEventListener('click', () => {
-        state.expressions = state.expressions.filter(it => it.id !== ex.id);
-        renderExprList(); draw(); persistToUrlDebounced();
-      });
-      tools.appendChild(del);
-
-      card.appendChild(tools);
-
-      exprListEl.appendChild(card);
+      const row2=document.createElement('div'); row2.className='range-row';
+      const lmin=document.createElement('input'); lmin.className='input'; lmin.value=sl.min; lmin.addEventListener('change',()=>{ sl.min=parseFloat(lmin.value)||sl.min; range.min=sl.min; }); row2.appendChild(lmin);
+      const lstep=document.createElement('input'); lstep.className='input'; lstep.value=sl.step; lstep.addEventListener('change',()=>{ sl.step=parseFloat(lstep.value)||sl.step; range.step=sl.step; }); row2.appendChild(lstep);
+      const lmax=document.createElement('input'); lmax.className='input'; lmax.value=sl.max; lmax.addEventListener('change',()=>{ sl.max=parseFloat(lmax.value)||sl.max; range.max=sl.max; }); row2.appendChild(lmax);
+      const hint=document.createElement('div'); hint.className='muted'; hint.style.gridColumn='1/-1'; hint.textContent='الترتيب: [الحد الأدنى, الخطوة, الحد الأقصى]';
+      card.appendChild(row2); card.appendChild(hint);
+      sliderListEl.appendChild(card);
     });
   }
 
-  function markExprError(id, msg) {
-    const card = exprListEl.querySelector(`[data-id="${id}"]`);
-    if (!card) return;
-    card.style.borderColor = '#5b1a1a';
-    card.title = msg;
-  }
-  function clearExprError(id) {
-    const card = exprListEl.querySelector(`[data-id="${id}"]`);
-    if (!card) return;
-    card.style.borderColor = '#172133';
-    card.title = '';
-  }
-
-  // ======= أحداث اللوحة: سحب/تكبير/إحداثيات =======
-  function updateStatus() {
-    statusEl.textContent = `س = ${toArabicDigits(state.mouse.wx.toFixed(3))}, ص = ${toArabicDigits(state.mouse.wy.toFixed(3))} | مقياس: 1 وحدة ≈ ${Math.max(1, Math.round(state.scale))}px`;
-  }
-
-  canvas.addEventListener('mousemove', (e) => {
-    const rect = canvas.getBoundingClientRect();
-    const ratio = window.devicePixelRatio || 1;
-    const sx = (e.clientX - rect.left) * ratio;
-    const sy = (e.clientY - rect.top) * ratio;
-    const w = screenToWorld(sx, sy);
-    state.mouse = { x: sx, y: sy, wx: w.x, wy: w.y };
-    if (state.dragging) {
-      const dx = (sx - state.dragStart.x) / (state.scale * ratio);
-      const dy = (sy - state.dragStart.y) / (state.scale * ratio);
-      state.centerX = state.dragStart.cx - dx;
-      state.centerY = state.dragStart.cy + dy;
-      draw();
-    } else {
-      updateStatus();
-    }
+  // ======= أحداث اللوحة =======
+  canvas.addEventListener('mousemove', (e)=>{
+    const rect=canvas.getBoundingClientRect(); const r=devicePixelRatio||1; const sx=(e.clientX-rect.left)*r, sy=(e.clientY-rect.top)*r; const w=screenToWorld(sx,sy);
+    state.mouse={x:sx,y:sy,wx:w.x,wy:w.y}; if(state.dragging){ const dx=(sx-state.dragStart.x)/(state.scale*r); const dy=(sy-state.dragStart.y)/(state.scale*r); state.centerX=state.dragStart.cx-dx; state.centerY=state.dragStart.cy+dy; draw(); } else updateStatus();
   });
+  canvas.addEventListener('mousedown', ()=>{ state.dragging=true; state.dragStart={x:state.mouse.x,y:state.mouse.y,cx:state.centerX,cy:state.centerY}; });
+  window.addEventListener('mouseup', ()=>{ state.dragging=false; persistDeb(); });
+  canvas.addEventListener('wheel', (e)=>{ e.preventDefault(); const delta=-Math.sign(e.deltaY); zoomAt(delta>0?1.12:1/1.12, state.mouse.x, state.mouse.y); }, {passive:false});
+  canvas.addEventListener('dblclick', ()=>{ resetView(); draw(); persistDeb(); });
+  canvas.addEventListener('click', (e)=>{ if(e.altKey){ const w=screenToWorld(state.mouse.x, state.mouse.y); draw(); drawTangentAt(w.x,w.y); } });
 
-  canvas.addEventListener('mousedown', (e) => {
-    state.dragging = true;
-    state.dragStart.x = state.mouse.x;
-    state.dragStart.y = state.mouse.y;
-    state.dragStart.cx = state.centerX;
-    state.dragStart.cy = state.centerY;
-  });
-  window.addEventListener('mouseup', () => { state.dragging = false; persistToUrlDebounced(); });
+  function zoomAt(factor, sx, sy){ const before=screenToWorld(sx,sy); state.scale=Math.min(1200, Math.max(8, state.scale*factor)); const after=screenToWorld(sx,sy); state.centerX += (before.x-after.x); state.centerY += (before.y-after.y); draw(); }
 
-  canvas.addEventListener('wheel', (e) => {
-    e.preventDefault();
-    const delta = -Math.sign(e.deltaY);
-    const zoomFactor = Math.pow(1.12, delta); // تكبير/تصغير سلس
+  // ======= الأزرار =======
+  document.getElementById('btnAdd').onclick=()=>{ state.expressions.push({ id:uid(), color: COLORS[state.expressions.length%COLORS.length], text:'', visible:true }); renderExprList(); };
+  document.getElementById('btnAddSlider').onclick=()=>{ state.sliders.push({ name:`a${state.sliders.length+1}`, min:-5, max:5, step:0.1, value:1 }); renderSliders(); draw(); };
+  document.getElementById('btnExport').onclick=()=>{ const url=canvas.toDataURL('image/png'); const a=document.createElement('a'); a.href=url; a.download='graph.png'; a.click(); };
+  document.getElementById('btnReset').onclick=()=>{ resetView(); draw(); persistDeb(); };
+  document.getElementById('btnZoomIn').onclick=()=> zoomAt(1.12, state.mouse.x, state.mouse.y);
+  document.getElementById('btnZoomOut').onclick=()=> zoomAt(1/1.12, state.mouse.x, state.mouse.y);
+  document.getElementById('btnShare').onclick=()=>{ persist(); navigator.clipboard?.writeText(location.href).then(()=>flash('تم نسخ الرابط')).catch(()=>flash('انسخ الرابط من شريط العنوان')); };
+  document.getElementById('btnSave').onclick=()=>{ const blob=new Blob([JSON.stringify(serialize(),null,2)],{type:'application/json'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='graph-settings.json'; a.click(); };
+  document.getElementById('btnLoad').onclick=()=>{ document.getElementById('fileLoader').click(); };
+  document.getElementById('fileLoader').addEventListener('change', (e)=>{ const f=e.target.files[0]; if(!f) return; const rd=new FileReader(); rd.onload=()=>{ try{ const obj=JSON.parse(rd.result); deserialize(obj); renderExprList(); renderSliders(); draw(); persistDeb(); }catch(err){ alert('ملف غير صالح'); } }; rd.readAsText(f); });
+  document.getElementById('btnTheme').onclick=()=>{ const root=document.getElementById('appRoot'); if(root.classList.contains('light')){ root.classList.remove('light'); state.theme='dark'; } else { root.classList.add('light'); state.theme='light'; } draw(); persistDeb(); };
 
-    // تكبير حول موضع المؤشر
-    const before = screenToWorld(state.mouse.x, state.mouse.y);
-    state.scale = Math.min(1000, Math.max(10, state.scale * zoomFactor));
-    const after = screenToWorld(state.mouse.x, state.mouse.y);
-    state.centerX += (before.x - after.x);
-    state.centerY += (before.y - after.y);
+  // ======= حالة/مشاركة =======
+  function updateStatus(){ statusEl.textContent = `س = ${toArabicDigits(state.mouse.wx.toFixed(3))}, ص = ${toArabicDigits(state.mouse.wy.toFixed(3))} | مقياس: 1u ≈ ${Math.round(state.scale)}px`; }
+  function flash(msg){ const old=statusEl.textContent; statusEl.textContent=msg; setTimeout(()=>statusEl.textContent=old, 1200); }
 
-    draw();
-    persistToUrlDebounced();
-  }, { passive: false });
+  function serialize(){ return { v:2, cx:state.centerX, cy:state.centerY, sc:state.scale, theme:state.theme, expr: state.expressions.map(e=>({t:e.text,c:e.color,v:!!e.visible})), sliders: state.sliders }; }
+  function deserialize(o){ if(!o) return; if(typeof o.cx==='number') state.centerX=o.cx; if(typeof o.cy==='number') state.centerY=o.cy; if(typeof o.sc==='number') state.scale=o.sc; if(o.theme==='light') document.getElementById('appRoot').classList.add('light'); state.theme=o.theme||'dark'; if(Array.isArray(o.expr)) state.expressions=o.expr.map((it,i)=>({id:uid(), text:it.t||'', color:it.c||COLORS[i%COLORS.length], visible: it.v!==false })); if(Array.isArray(o.sliders)) state.sliders=o.sliders; }
+  function persist(){ const b64=btoa(unescape(encodeURIComponent(JSON.stringify(serialize())))); const url=new URL(location.href); url.hash='#g='+b64; history.replaceState(null,'',url); }
+  const persistDeb = debounce(persist, 300);
+  function loadFromUrl(){ const m=(location.hash||'').match(/#g=([^&]+)/); if(!m) return false; try{ const obj=JSON.parse(decodeURIComponent(escape(atob(m[1])))); deserialize(obj); return true; }catch(e){ return false; } }
+  function debounce(fn,ms){ let t; return (...a)=>{ clearTimeout(t); t=setTimeout(()=>fn(...a),ms); } }
 
-  canvas.addEventListener('dblclick', () => { resetView(); draw(); persistToUrlDebounced(); });
+  function resetView(){ state.centerX=0; state.centerY=0; state.scale=60; }
 
-  // ======= أزرار الأدوات =======
-  document.getElementById('btnAdd').addEventListener('click', () => {
-    state.expressions.push({ id: uid(), color: COLORS[state.expressions.length % COLORS.length], text: '', visible: true });
-    renderExprList();
-  });
+  function showTooltip(sx,sy,msg){ tooltip.style.left=`${sx}px`; tooltip.style.top=`${sy}px`; tooltip.textContent=msg; tooltip.style.display='block'; setTimeout(()=>tooltip.style.display='none', 1800); }
 
-  document.getElementById('btnReset').addEventListener('click', () => { resetEverything(); draw(); persistToUrlDebounced(); });
-
-  document.getElementById('btnExport').addEventListener('click', () => {
-    // حفظ صورة PNG بدقة الشاشة
-    const url = canvas.toDataURL('image/png');
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'graph.png';
-    a.click();
-  });
-
-  document.getElementById('btnShare').addEventListener('click', () => {
-    persistToUrl();
-    navigator.clipboard?.writeText(location.href).then(() => {
-      flashStatus('تم نسخ الرابط إلى الحافظة');
-    }).catch(() => flashStatus('تم تحديث الرابط – قم بنسخه من شريط العنوان'));
-  });
-
-  function flashStatus(msg) {
-    const old = statusEl.textContent;
-    statusEl.textContent = msg;
-    setTimeout(() => { statusEl.textContent = old; }, 1400);
-  }
-
-  // ======= حفظ/تحميل الحالة في الرابط =======
-  function serialize() {
-    return {
-      v: 1,
-      cx: state.centerX,
-      cy: state.centerY,
-      sc: state.scale,
-      expr: state.expressions.map(e => ({ t: e.text, c: e.color, v: !!e.visible }))
-    };
-  }
-  function deserialize(data) {
-    if (!data || typeof data !== 'object') return;
-    if (typeof data.cx === 'number') state.centerX = data.cx;
-    if (typeof data.cy === 'number') state.centerY = data.cy;
-    if (typeof data.sc === 'number') state.scale = data.sc;
-    if (Array.isArray(data.expr)) {
-      state.expressions = data.expr.map((it, i) => ({ id: uid(), text: it.t || '', color: it.c || COLORS[i % COLORS.length], visible: it.v !== false }));
-    }
-  }
-  function persistToUrl() {
-    const obj = serialize();
-    const json = JSON.stringify(obj);
-    const b64 = btoa(unescape(encodeURIComponent(json)));
-    const url = new URL(location.href);
-    url.hash = '#g=' + b64;
-    history.replaceState(null, '', url);
-  }
-  const persistToUrlDebounced = debounce(persistToUrl, 300);
-
-  function loadFromUrl() {
-    const h = location.hash || '';
-    const m = h.match(/#g=([^&]+)/);
-    if (!m) return false;
-    try {
-      const json = decodeURIComponent(escape(atob(m[1])));
-      const obj = JSON.parse(json);
-      deserialize(obj);
-      return true;
-    } catch (e) { console.warn('Invalid hash state', e); }
-    return false;
-  }
-
-  function debounce(fn, ms) { let t; return (...a) => { clearTimeout(t); t = setTimeout(() => fn(...a), ms); }; }
-
-  // ======= إعادة الضبط =======
-  function resetView() {
-    state.centerX = 0; state.centerY = 0; state.scale = 60;
-  }
-  function resetEverything() {
-    resetView();
-    state.expressions = [ { id: uid(), color: '#22d3ee', text: 'ص = س^2', visible: true } ];
-    renderExprList();
-  }
-
-  // ======= تهيئة =======
-  function init() {
-    // تخطيط الشبكة: اللوحة تأخذ كامل المساحة المتاحة
-    const main = document.querySelector('.canvas-wrap');
-    // تجعل اللوحة تملأ المساحة في الـ CSS؛ هنا فقط نرسم بقياس البكسل الفعلي
-    const ro = new ResizeObserver(() => resizeCanvas());
-    ro.observe(main);
-
-    renderExprList();
-
-    // تحميل الحالة إن وُجدت
-    if (!loadFromUrl()) persistToUrl();
-
-    resizeCanvas();
-    draw();
-  }
-
+  function init(){ renderExprList(); renderSliders(); if(!loadFromUrl()) persist(); resizeCanvas(); draw(); }
   init();
 })();
 </script>
