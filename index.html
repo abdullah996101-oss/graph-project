@@ -179,16 +179,85 @@
 
   // ======= تحويل/تطبيع نص =======
   function preprocessBasic(s){
-    s = toEnglishDigits(String(s));
-    s = s.replace(/[سx]/gi,'x').replace(/[صy]/gi,'y');
-    s = s.replace(/π|باي/gi,'PI').replace(/هـ|\be\b/gi,'E');
-    s = s.replace(/[÷]/g,'/').replace(/[×]/g,'*').replace(/\^/g,'**');
-    arabicFns.forEach(([re,rep]) => s = s.replace(re,rep));
-    s = s.replace(/\bln\(/g,'log(');
-    return s.replace(/\s+/g,' ').trim();
-  }
-  function sideIsY(raw){ const s = preprocessBasic(raw).trim(); return /^y$/i.test(s); }
+  // 1) تطبيع عام
+  s = toEnglishDigits(String(s));
 
+  // المتغيرات بالعربية/الإنجليزية → رموز موحّدة
+  s = s
+    .replace(/[سx]/gi, 'x')     // س أو x ← x
+    .replace(/[صy]/gi, 'y')     // ص أو y ← y (قد تظهر في المعادلات الضمنية)
+    .replace(/[θϴ]/g, 'theta'); // ثيتا ← theta للقطبي/البارامتري
+
+  // الثوابت والرموز
+  s = s
+    .replace(/π|باي/gi, 'PI')   // π ← PI
+    .replace(/هـ/g, 'E')        // هـ ← E (عدد أويلر)
+    .replace(/[÷]/g, '/')       // ÷ ← /
+    .replace(/[×]/g, '*')       // × ← *
+    .replace(/\^/g, '**');      // ^ ← **
+
+  // دوال عربية شائعة → إنجليزية
+  arabicFns.forEach(([re, rep]) => s = s.replace(re, rep));
+  // ln ← log (الطبيعي)
+  s = s.replace(/\bln\(/g, 'log(');
+
+  // 2) إدراج الضرب الضمني (الأهم لحالتك: 2س، (س+1)(س-1)، 3πس، 2جذر(س) ...)
+  // ملاحظات:
+  // - نضيف * بين رقم و (x|y|theta|t|PI|E|()
+  // - وبين (x|y|theta|t|PI|E|)) و (رقم|()
+  // - وبين (رقم|x|y|theta|t|PI|E) و (sin|cos|tan|sqrt|abs|log)
+  // - وبين ) و (  ، وكذلك (PI|E) ملاصقة للمتغيرات أو العكس
+  const FN = '(sin|cos|tan|sqrt|abs|log)';
+  s = s.replace(new RegExp('(\\d)\\s*(x|y|theta|t|PI|E|\\()', 'gi'), '$1*$2');
+  s = s.replace(new RegExp('(x|y|theta|t|PI|E|\\))\\s*(\\d|\\()', 'gi'), '$1*$2');
+  s = s.replace(new RegExp(`(\\d|x|y|theta|t|PI|E)\\s*${FN}`, 'gi'), '$1*$2');
+  s = s.replace(new RegExp(`\\)\\s*${FN}`, 'gi'), ')*$1');
+  s = s.replace(/\)\s*\(/g, ')*(');
+  s = s.replace(/(x|y|theta|t)\s*(PI|E)/gi, '$1*$2');
+  s = s.replace(/(PI|E)\s*(x|y|theta|t)/gi, '$1*$2');
+
+  // مسافات
+  return s.replace(/\s+/g, ' ').trim();
+}
+  function sideIsY(raw){
+  const s = preprocessBasic(raw).trim();
+  return /^y$/i.test(s); // "y" فقط (بعد التطبيع)
+}
+
+function normalizeExpr(raw){
+  if(!raw) return {kind:'none'};
+
+  const {text, domain} = extractDomain(raw);
+  let s = String(text).trim();
+
+  if (s.includes('=')) {
+    const [lhsRaw, rhsRaw] = s.split('=');
+    const lhs = preprocessBasic(lhsRaw), rhs = preprocessBasic(rhsRaw);
+
+    // بارامترية وصيغ أخرى (كما في نسختك الحالية) ...
+    if(/x\(t\)\s*=/.test(lhs+rhs) && /y\(t\)\s*=/.test(lhs+rhs)){
+      const pair = preprocessBasic(s);
+      const mx = pair.match(/x\(t\)\s*=\s*([^,;]+)[,;]/i);
+      const my = pair.match(/y\(t\)\s*=\s*([^,;]+)/i);
+      if(mx && my){ return {kind:'param', xt: mx[1].trim(), yt: my[1].trim(), domain}; }
+    }
+    if(/r\((theta|ϴ|θ)\)\s*=/.test(lhs+rhs)){
+      const all = preprocessBasic(s);
+      const mr = all.match(/r\((?:theta|ϴ|θ)\)\s*=\s*(.+)/i);
+      if(mr){ return {kind:'polar', rth: mr[1].trim(), domain}; }
+    }
+
+    // صريحة: y في أحد الطرفين منفردة
+    if (sideIsY(lhs)) return { kind:'explicit', js: preprocessBasic(rhs), domain };
+    if (sideIsY(rhs)) return { kind:'explicit', js: preprocessBasic(lhs), domain };
+
+    // ضمنية عامة: مثال س^2 + ص^2 = 9
+    return { kind:'implicit', eq: preprocessBasic(s), domain };
+  }
+
+  // بدون "=", نعتبرها صريحة: y = expr(x)
+  return { kind:'explicit', js: preprocessBasic(s), domain };
+}
   function extractDomain(raw){
     // يبحث عن { ... } ويرجع كائن مجال
     // أمثلة: {0 <= x <= 2*PI}, {x in [0,10]}, {y between -2 and 3}
