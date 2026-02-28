@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="ar" dir="rtl" class="">
+<html lang="ar" dir="rtl">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -12,7 +12,7 @@
       --accent: #22d3ee; --danger: #ef4444; --ok: #22c55e; --warn: #f59e0b;
       --chip: #0b1422; --border: #172133; --shadow: 0 1px 0 #0c111b, inset 0 1px 0 rgba(255,255,255,.02);
     }
-    /* عندما نضيف كلاس light على <html> تصبح المتغيّرات التالية فعّالة */
+    /* لما نضيف كلاس light على <html> تتحول المتغيّرات */
     :root.light {
       --bg: #f8fafc; --panel: #ffffff; --panel-2: #f3f4f6; --text: #0f172a;
       --muted: #475569; --grid-sub: #e5e7eb; --grid: #cbd5e1; --axis: #1f2937;
@@ -38,9 +38,9 @@
     .btn { background: transparent; color: var(--text); border: 1px solid var(--border); padding: 8px 10px; border-radius: 10px; cursor: pointer; font-size: 13px; box-shadow: var(--shadow); }
     .btn:hover { filter: brightness(1.05); }
     .btn.primary { background: var(--chip); }
-    .btn.ok { color: #c7f9de; border-color: rgba(16,185,129,.35); background: rgba(16,185,129,.1); }
-    .btn.warn { color: #fff7db; border-color: rgba(245,158,11,.35); background: rgba(245,158,11,.12); }
-    .btn.danger { color: #ffe1e1; border-color: rgba(239,68,68,.35); background: rgba(239,68,68,.12); }
+    .btn.ok { color: #0f5132; background: rgba(34,197,94,.15); border-color: rgba(34,197,94,.35); }
+    .btn.warn { color: #7c2d12; background: rgba(245,158,11,.15); border-color: rgba(245,158,11,.35); }
+    .btn.danger { color: #7f1d1d; background: rgba(239,68,68,.15); border-color: rgba(239,68,68,.35); }
 
     .section { margin-top: 10px; }
     .section h3 { margin: 12px 0 8px; font-size: 14px; }
@@ -62,7 +62,7 @@
     canvas { display: block; width: 100%; height: 100%; background: transparent; }
 
     .status { position: absolute; bottom: 8px; left: 10px; background: rgba(2,6,23,.55); border: 1px solid var(--border); border-radius: 10px; padding: 6px 10px; font-size: 12px; color: #cbd5e1; backdrop-filter: blur(4px); }
-    body.light .status, .light .status { background: rgba(255,255,255,.75); color: #0f172a; border-color: #cbd5e1; }
+    .light .status { background: rgba(255,255,255,.75); color: #0f172a; border-color: #cbd5e1; }
 
     .floating { position: absolute; top: 8px; left: 12px; display: flex; gap: 6px; z-index: 5; }
     .fab { background: var(--panel); border: 1px solid var(--border); color: var(--text); padding: 6px 10px; border-radius: 10px; cursor: pointer; font-size: 13px; }
@@ -71,10 +71,10 @@
     .slider-card { display: grid; gap: 8px; }
 
     .tooltip { position: absolute; pointer-events: none; background: rgba(2,6,23,.9); color: #e2e8f0; border: 1px solid var(--border); padding: 6px 8px; border-radius: 8px; font-size: 12px; transform: translate(-50%, -120%); white-space: nowrap; }
-    body.light .tooltip, .light .tooltip { background: rgba(255,255,255,.95); color: #0f172a; }
+    .light .tooltip { background: rgba(255,255,255,.95); color: #0f172a; }
   </style>
 </head>
-<body class="">
+<body>
   <div class="app" id="appRoot">
     <aside class="sidebar">
       <div class="header">
@@ -141,14 +141,14 @@
   const toArabicDigits = (s) => String(s).replace(/[0-9]/g, d => AR_DIGITS[d]);
   const toEnglishDigits = (s) => String(s).replace(/[٠-٩]/g, ch => EN_DIGITS[AR_DIGITS.indexOf(ch)]).replace(/،/g, ',');
 
-  // ======= أسماء دوال عربية -> Math =======
+  // ======= أسماء دوال عربية -> Math (تصحيح نمط "جذر") =======
   const arabicPairs = [
     [/\bجا\b/g, 'sin'], [/\bجتا\b/g, 'cos'], [/\bظا\b/g, 'tan'],
-    [/\بجذر\b/g, 'sqrt'], [/\bقيمة_?مطلقة\b/g, 'abs'],
+    [/\bجذر\b/g, 'sqrt'], [/\bقيمة_?مطلقة\b/g, 'abs'],
     [/\bلو\b/g, 'log'], [/\bلن\b/g, 'ln']
   ];
 
-  // ======= الحالة العامة =======
+  // ======= الحالة =======
   const canvas = document.getElementById('canvas');
   const ctx = canvas.getContext('2d');
   const statusEl = document.getElementById('status');
@@ -169,7 +169,7 @@
     polylines: []
   };
 
-  // ======= تحويل/تطبيع نص =======
+  // ======= تطبيع وإدخال ضرب ضمني =======
   function preprocessBasic(s){
     s = toEnglishDigits(String(s));
 
@@ -186,10 +186,10 @@
     arabicPairs.forEach(([re, rep]) => s = s.replace(re, rep));
     s = s.replace(/\bln\(/g, 'log(');
 
-    // إدراج الضرب الضمني
+    // ضرب ضمني شائع
     const FN = '(sin|cos|tan|sqrt|abs|log)';
-    s = s.replace(new RegExp('(\\d)\\s*(x|y|theta|t|PI|E|\\()', 'gi'), '$1*$2');
-    s = s.replace(new RegExp('(x|y|theta|t|PI|E|\\))\\s*(\\d|\\()', 'gi'), '$1*$2');
+    s = s.replace(/(\d)\s*(x|y|theta|t|PI|E|\()/gi, '$1*$2');
+    s = s.replace(/(x|y|theta|t|PI|E|\))\s*(\d|\()/gi, '$1*$2');
     s = s.replace(new RegExp(`(\\d|x|y|theta|t|PI|E)\\s*${FN}`, 'gi'), '$1*$2');
     s = s.replace(new RegExp(`\\)\\s*${FN}`, 'gi'), ')*$1');
     s = s.replace(/\)\s*\(/g, ')*(');
@@ -199,9 +199,9 @@
     return s.replace(/\s+/g, ' ').trim();
   }
 
-  function containsY(s){ return /\by\b/i.test(String(s)); }
+  const containsY = (s) => /\by\b/i.test(String(s));
 
-  // محاولة عزل y خطيًا
+  // عزل y خطيًا إن أمكن (مثل: 2*x = y + 1 -> y = 2*x - 1)
   function tryLinearSolveForY(lhsRaw, rhsRaw){
     const L0 = preprocessBasic(lhsRaw);
     const R0 = preprocessBasic(rhsRaw);
@@ -209,34 +209,37 @@
     function solve(side, other){
       if (containsY(other)) return null;
       let m;
+      // a(x)*y ± b(x)
       m = side.match(/^(.+?)\*?y\s*([+\-])\s*(.+)$/i);
       if (m && !containsY(m[1]) && !containsY(m[3])) {
         const a=m[1].trim(), op=m[2], b=m[3].trim();
         const num = op==='+' ? `(${other})-(${b})` : `(${other})+(${b})`;
         return `(${num})/(${a})`;
       }
+      // y ± b(x)
       m = side.match(/^y\s*([+\-])\s*(.+)$/i);
       if (m && !containsY(m[2])) {
         const op=m[1], b=m[2].trim();
         return op==='+' ? `(${other})-(${b})` : `(${other})+(${b})`;
       }
+      // a(x)*y
       m = side.match(/^(.+?)\*?y$/i);
       if (m && !containsY(m[1])) {
         const a=m[1].trim(); return `(${other})/(${a})`;
       }
+      // y فقط
       if (/^y$/i.test(side)) return `${other}`;
       return null;
     }
+
     let js = solve(R0, L0); if (js) return js;
     js = solve(L0, R0); if (js) return js;
     return null;
   }
 
-  function sideIsY(raw){
-    const s = preprocessBasic(raw).trim();
-    return /^y$/i.test(s);
-  }
+  const sideIsY = (raw) => /^y$/i.test(preprocessBasic(raw).trim());
 
+  // استخراج مجال { ... }
   function extractDomain(raw){
     const m = raw.match(/\{([^}]*)\}/);
     if(!m) return {text: raw, domain: null};
@@ -278,32 +281,36 @@
       const [lhsRaw, rhsRaw] = s.split('=');
       const lhs = preprocessBasic(lhsRaw), rhs = preprocessBasic(rhsRaw);
 
+      // بارامترية
       if (/x\(t\)\s*=/.test(lhs+rhs) && /y\(t\)\s*=/.test(lhs+rhs)) {
         const pair = preprocessBasic(s);
         const mx = pair.match(/x\(t\)\s*=\s*([^,;]+)[,;]/i);
         const my = pair.match(/y\(t\)\s*=\s*([^,;]+)/i);
         if (mx && my) return { kind:'param', xt: mx[1].trim(), yt: my[1].trim(), domain };
       }
+      // قطبية
       if (/r\((theta|ϴ|θ)\)\s*=/.test(lhs+rhs)) {
         const all = preprocessBasic(s);
         const mr = all.match(/r\((?:theta|ϴ|θ)\)\s*=\s*(.+)/i);
         if (mr) return { kind:'polar', rth: mr[1].trim(), domain };
       }
+      // y منفردة
       if (sideIsY(lhs)) return { kind:'explicit', js: preprocessBasic(rhsRaw), domain };
       if (sideIsY(rhs)) return { kind:'explicit', js: preprocessBasic(lhsRaw), domain };
 
+      // عزل y خطيًا
       const solved = tryLinearSolveForY(lhsRaw, rhsRaw);
       if (solved) return { kind:'explicit', js: preprocessBasic(solved), domain };
 
+      // ضمني
       return { kind:'implicit', eq: preprocessBasic(s), domain };
     }
 
+    // بدون مساواة: y = expr(x)
     return { kind:'explicit', js: preprocessBasic(s), domain };
   }
 
-  function isSafe(expr){
-    return /^[0-9+\-*/().,\sxa-zA-Z_]*\**[0-9+\-*/().,\sxa-zA-Z_]*$/.test(expr);
-  }
+  const isSafe = (expr) => /^[0-9+\-*/().,\sxa-zA-Z_]*\**[0-9+\-*/().,\sxa-zA-Z_]*$/.test(expr);
 
   function buildScope(vars){
     const scope = Object.create(Math);
@@ -330,7 +337,7 @@
     return fn();
   }
 
-  // ======= تحويل الإحداثيات =======
+  // ======= تحويل =======
   function worldToScreen(x,y){
     const r = devicePixelRatio||1, w=canvas.width, h=canvas.height;
     return { x:(w/2)+(x-state.centerX)*state.scale*r, y:(h/2)-(y-state.centerY)*state.scale*r };
@@ -352,8 +359,7 @@
     const target=110; const units=target/ppu; const p=Math.pow(10, Math.floor(Math.log10(units)));
     const c=[1,2,5,10].map(v=>v*p); let best=c[0]; for(const v of c) if(Math.abs(v-units)<Math.abs(best-units)) best=v; return best;
   }
-
-  function cssVar(name){ return getComputedStyle(document.body).getPropertyValue(name) || getComputedStyle(document.documentElement).getPropertyValue(name); }
+  const cssVar = (name) => getComputedStyle(document.documentElement).getPropertyValue(name);
 
   function drawGrid(){
     const r=devicePixelRatio||1, w=canvas.width, h=canvas.height;
@@ -363,23 +369,23 @@
     const step = niceStep(state.scale);
     const sub = step/5; const tl = screenToWorld(0,0), br = screenToWorld(w,h);
 
-    // خطوط فرعية
+    // فرعية
     ctx.lineWidth=1; ctx.strokeStyle=cssVar('--grid-sub'); ctx.beginPath();
     for(let x=Math.floor(tl.x/sub)*sub; x<=br.x; x+=sub){ const sx=worldToScreen(x,0).x; ctx.moveTo(sx+.5,0); ctx.lineTo(sx+.5,h); }
     for(let y=Math.floor(br.y/sub)*sub; y<=tl.y; y+=sub){ const sy=worldToScreen(0,y).y; ctx.moveTo(0,sy+.5); ctx.lineTo(w,sy+.5); }
     ctx.stroke();
 
-    // خطوط رئيسية
+    // رئيسية
     ctx.strokeStyle=cssVar('--grid'); ctx.beginPath();
     for(let x=Math.floor(tl.x/step)*step; x<=br.x; x+=step){ const sx=worldToScreen(x,0).x; ctx.moveTo(sx+.5,0); ctx.lineTo(sx+.5,h); }
     for(let y=Math.floor(br.y/step)*step; y<=tl.y; y+=step){ const sy=worldToScreen(0,y).y; ctx.moveTo(0,sy+.5); ctx.lineTo(w,sy+.5); }
     ctx.stroke();
 
-    // المحاور
+    // محاور
     ctx.strokeStyle=cssVar('--axis'); ctx.lineWidth=1.5; ctx.beginPath();
     const sx0=worldToScreen(0,0).x, sy0=worldToScreen(0,0).y; ctx.moveTo(sx0+.5,0); ctx.lineTo(sx0+.5,h); ctx.moveTo(0,sy0+.5); ctx.lineTo(w,sy0+.5); ctx.stroke();
 
-    // التسميات والأرقام
+    // تسميات وأرقام
     ctx.fillStyle = cssVar('--axis');
     ctx.font = `${12*r}px system-ui, -apple-system, Segoe UI, Noto Sans Arabic, Arial`;
     ctx.textAlign='right'; ctx.textBaseline='top'; ctx.fillText('س', Math.min(w-6,w-6), sy0 + 6);
@@ -508,7 +514,7 @@
     return null;
   }
 
-  // ======= مماس وميل (Alt+Click) — إصلاح المتغير =======
+  // ======= مماس وميل (Alt+Click) — إصلاح =======
   function drawTangentAt(xw, yw) {
     let best = null, bestCurve = null, bestP = null;
     for (const pl of state.polylines) {
@@ -564,8 +570,8 @@
       card.appendChild(tools); exprListEl.appendChild(card);
     });
   }
-  function markExprError(id,msg){ const card=exprListEl.querySelector(`[data-id="${id}"]`); if(!card) return; card.style.borderColor='#7f1d1d'; card.title=msg; }
-  function clearExprError(id){ const card=exprListEl.querySelector(`[data-id="${id}"]`); if(!card) return; card.style.borderColor='var(--border)'; card.title=''; }
+  const markExprError = (id,msg) => { const card=exprListEl.querySelector(`[data-id="${id}"]`); if(card){ card.style.borderColor='#7f1d1d'; card.title=msg; } };
+  const clearExprError = (id) => { const card=exprListEl.querySelector(`[data-id="${id}"]`); if(card){ card.style.borderColor='var(--border)'; card.title=''; } };
 
   // ======= المنزلقات =======
   function renderSliders(){
@@ -623,7 +629,7 @@
     state.centerX += (before.x-after.x); state.centerY += (before.y-after.y); draw();
   }
 
-  // ======= الأزرار =======
+  // ======= أزرار =======
   document.getElementById('btnAdd').onclick=()=>{ state.expressions.push({ id:uid(), color: COLORS[state.expressions.length%COLORS.length], text:'', visible:true }); renderExprList(); };
   document.getElementById('btnAddSlider').onclick=()=>{ state.sliders.push({ name:`a${state.sliders.length+1}`, min:-5, max:5, step:0.1, value:1 }); renderSliders(); draw(); };
   document.getElementById('btnExport').onclick=()=>{ const url=canvas.toDataURL('image/png'); const a=document.createElement('a'); a.href=url; a.download='graph.png'; a.click(); };
@@ -635,12 +641,11 @@
   document.getElementById('btnLoad').onclick=()=>{ document.getElementById('fileLoader').click(); };
   document.getElementById('fileLoader').addEventListener('change', (e)=>{ const f=e.target.files[0]; if(!f) return; const rd=new FileReader(); rd.onload=()=>{ try{ const obj=JSON.parse(rd.result); deserialize(obj); renderExprList(); renderSliders(); draw(); persistDeb(); }catch(err){ alert('ملف غير صالح'); } }; rd.readAsText(f); });
 
-  // تبديل المظهر: ضع كلاس light على html و body
+  // تبديل المظهر: نضيف/نزيل كلاس light على <html> (و body للوراثة)
   document.getElementById('btnTheme').onclick = () => {
     const html = document.documentElement;
-    const body = document.body;
     const toLight = !html.classList.contains('light');
-    [html, body].forEach(el => el.classList.toggle('light', toLight));
+    [document.documentElement, document.body].forEach(el => el.classList.toggle('light', toLight));
     state.theme = toLight ? 'light' : 'dark';
     draw(); persistDeb();
   };
@@ -676,10 +681,7 @@
     renderExprList();
     renderSliders();
     if(!loadFromUrl()){
-      // ابدأ بالوضع الداكن افتراضياً. لو تبي الفاتح افتراضياً فعّل السطرين:
-      // document.documentElement.classList.add('light');
-      // document.body.classList.add('light');
-      persist();
+      persist(); // اجعل الحالة الحالية أساسيّة في الرابط
     }
     resizeCanvas(); draw();
   }
