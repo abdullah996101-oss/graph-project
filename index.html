@@ -1,0 +1,603 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>آلة رسم بياني (س/ص) – شبيه دِسموس</title>
+  <style>
+    :root {
+      --bg: #0b1220;
+      --panel: #0f172a;
+      --panel-2: #111827;
+      --text: #e5e7eb;
+      --muted: #94a3b8;
+      --grid: #1f2937;
+      --grid-bold: #374151;
+      --axis: #cbd5e1;
+      --accent: #22d3ee;
+      --danger: #ef4444;
+      --ok: #22c55e;
+    }
+    * { box-sizing: border-box; }
+    html, body { height: 100%; }
+    body {
+      margin: 0;
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, "Noto Sans Arabic", "Helvetica Neue", Arial, "Apple Color Emoji", "Segoe UI Emoji";
+      color: var(--text);
+      background: linear-gradient(180deg, #0a0f1b, #0b1220);
+      overflow: hidden;
+    }
+    .app {
+      display: grid;
+      grid-template-columns: 360px 1fr;
+      gap: 0;
+      height: 100%;
+    }
+    .sidebar {
+      background: linear-gradient(180deg, var(--panel), var(--panel-2));
+      border-left: 1px solid #1f2937;
+      padding: 16px 14px 12px 14px;
+      overflow: auto;
+    }
+    .header {
+      display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 10px;
+    }
+    h1 { font-size: 16px; margin: 0; font-weight: 700; letter-spacing: 0.2px; }
+    .muted { color: var(--muted); font-size: 12px; }
+    .row { display: flex; gap: 8px; align-items: center; }
+    .btn {
+      background: #111827; color: var(--text); border: 1px solid #1f2937;
+      padding: 8px 10px; border-radius: 10px; cursor: pointer; font-size: 13px;
+      transition: transform .05s ease, background .2s ease, border-color .2s ease; user-select: none;
+    }
+    .btn:hover { background: #0b1325; border-color: #263245; }
+    .btn:active { transform: translateY(1px); }
+    .btn.primary { background: #0b1a2a; border-color: #1b3653; }
+    .btn.success { border-color: #1c4532; color: #a7f3d0; }
+    .btn.danger { border-color: #4c1d1d; color: #fecaca; }
+
+    .expr-list { display: flex; flex-direction: column; gap: 10px; margin-top: 10px; }
+    .card {
+      background: #0c1626; border: 1px solid #172133; border-radius: 14px;
+      padding: 10px; display: grid; grid-template-columns: 24px 1fr 28px; gap: 8px; align-items: center;
+      box-shadow: 0 1px 0 #0c111b, inset 0 1px 0 rgba(255,255,255,0.02);
+    }
+    .swatch { width: 16px; height: 16px; border-radius: 4px; border: 2px solid rgba(255,255,255,0.15); }
+    .input {
+      background: #0a1220; border: 1px solid #172133; color: var(--text); border-radius: 10px;
+      padding: 8px 10px; font-size: 14px; width: 100%; outline: none;
+    }
+    .input:focus { border-color: #254061; box-shadow: 0 0 0 3px rgba(59,130,246,0.2); }
+    .icon-btn { background: transparent; border: 0; color: var(--muted); cursor: pointer; font-size: 16px; }
+    .icon-btn:hover { color: #fca5a5; }
+
+    .toolbar { display: flex; gap: 8px; flex-wrap: wrap; margin: 8px 0 12px 0; }
+    .hint { font-size: 12px; color: var(--muted); margin-top: 6px; line-height: 1.6; }
+
+    .canvas-wrap { position: relative; }
+    canvas { display: block; width: 100%; height: 100%; background: transparent; }
+    .status {
+      position: absolute; bottom: 8px; left: 10px; background: rgba(2,6,23,0.6); backdrop-filter: blur(4px);
+      border: 1px solid #0b2033; border-radius: 10px; padding: 6px 10px; font-size: 12px; color: #cbd5e1;
+    }
+    .badge { padding: 2px 8px; border-radius: 999px; border: 1px solid #1f2937; background: #0b1422; }
+    .kbd { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace; padding: 0 6px; border: 1px solid #20314b; border-radius: 6px; background: #0a1220; }
+
+    .footer { margin-top: 10px; display: grid; gap: 6px; }
+    .small { font-size: 11px; color: var(--muted); }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <aside class="sidebar">
+      <div class="header">
+        <div>
+          <h1>آلة رسم بياني (س/ص)</h1>
+          <div class="muted">تطبيق صفحة واحدة – شبيه دِسموس</div>
+        </div>
+        <button id="btnReset" class="btn" title="إعادة الضبط">إعادة</button>
+      </div>
+
+      <div class="toolbar">
+        <button id="btnAdd" class="btn primary">+ إضافة دالة</button>
+        <button id="btnExport" class="btn">تصدير صورة PNG</button>
+        <button id="btnShare" class="btn">مشاركة كرابط</button>
+      </div>
+
+      <div class="hint">
+        اكتب الدوال بدلالة <b>س</b> (مثال: <span class="badge">ص = س^2</span> أو <span class="badge">س^3 - 2*س</span>).<br/>
+        دوال متاحة: <span class="badge">sin</span> <span class="badge">cos</span> <span class="badge">tan</span> <span class="badge">abs</span> <span class="badge">sqrt</span> <span class="badge">exp</span> <span class="badge">log</span> <span class="badge">ln</span>.
+        يمكن استخدام العربية: <span class="badge">جا</span>/<span class="badge">جتا</span>/<span class="badge">ظا</span>/<span class="badge">جذر</span>.
+      </div>
+
+      <div id="exprList" class="expr-list"></div>
+
+      <div class="footer">
+        <div class="small">التفاعل: سحب للف، عجلة الفأرة للتكبير/التصغير، نقرتان مزدوجتان لإعادة الضبط.</div>
+        <div class="small">المحاور: <b>س</b> و <b>ص</b>، مع شبكة وتدرّج ذكي.</div>
+      </div>
+    </aside>
+
+    <main class="canvas-wrap">
+      <canvas id="canvas"></canvas>
+      <div id="status" class="status">س = 0, ص = 0 | مقياس: 1 وحدة ≈ 60px</div>
+    </main>
+  </div>
+
+<script>
+(() => {
+  // ======= أدوات ترميز/فك ترميز للأرقام العربية-الهندية =======
+  const AR_DIGITS = "٠١٢٣٤٥٦٧٨٩";
+  const EN_DIGITS = "0123456789";
+  function toArabicDigits(numStr) {
+    return String(numStr).replace(/[0-9]/g, d => AR_DIGITS[d]);
+  }
+  function toEnglishDigits(str) {
+    return String(str)
+      .replace(/[٠-٩]/g, ch => EN_DIGITS[AR_DIGITS.indexOf(ch)])
+      .replace(/،/g, ',');
+  }
+
+  // ======= تحويل الدوال العربية، وتطبيع التعبير =======
+  const arabicFns = [
+    [/\bجا\b/g, 'sin'],  // جا -> sin
+    [/\bجتا\b/g, 'cos'], // جتا -> cos
+    [/\bظا\b/g, 'tan'],  // ظا -> tan
+    [/\bجذر\b/g, 'sqrt'],
+    [/\bقيمة_?مطلقة\b/g, 'abs'],
+    [/\bلو\b/g, 'log'],  // لو (لوغاريتم عشري) -> log (سنعتبره log10 إذا كُتب log10)
+    [/\bلن\b/g, 'ln']    // لن -> ln (لوغاريتم طبيعي)
+  ];
+
+  function normalizeExpr(input) {
+    if (!input) return '';
+    let s = String(input).trim();
+    // إذا كتب المستخدم ص = ... خذ يمين علامة =
+    const eqIdx = s.indexOf('=');
+    if (eqIdx !== -1) s = s.slice(eqIdx + 1);
+
+    s = toEnglishDigits(s);
+    // استبدال الحروف العربية والرموز الشائعة
+    s = s.replace(/[سx]/gi, 'x'); // نعتبر س أو x كلاهما متغيّر مستقل
+    s = s.replace(/π|باي/gi, 'PI');
+    s = s.replace(/هـ|\be\b/gi, 'E');
+    s = s.replace(/[÷]/g, '/').replace(/[×]/g, '*').replace(/\^/g, '**');
+
+    // توحيد أسماء الدوال العربية إلى إنجليزية
+    arabicFns.forEach(([re, rep]) => s = s.replace(re, rep));
+
+    // دعم ln كـ Math.log (لوغاريتم طبيعي)
+    s = s.replace(/\bln\(/g, 'log(');
+
+    // تنظيف المسافات
+    s = s.replace(/\s+/g, ' ').trim();
+    return s;
+  }
+
+  function isSafe(expr) {
+    // قائمة بيضاء بسيطة للأحرف المسموح بها بعد التطبيع
+    // لاحِظ أننا نسمح بالحروف الإنجليزية للدوال فقط.
+    const ok = /^[0-9+\-*/().,\sxa-zA-Z_]*\**[0-9+\-*/().,\sxa-zA-Z_]*$/;
+    return ok.test(expr);
+  }
+
+  function createEvaluator(expr) {
+    const js = normalizeExpr(expr);
+    if (!js || !isSafe(js)) {
+      throw new Error('تعبير غير صالح أو يحتوي على رموز غير مسموح بها');
+    }
+    // نوفّر دوال Math في النطاق. ندعم log10 صراحةً.
+    const src = `const log10 = (v) => Math.log10(v);\nwith (Math) { return (${js}); }`;
+    // نبني دالة f(x)
+    // تحذير: هذا مخصص للتجربة التعليمية ومع قائمة بيضاء بسيطة فقط.
+    return new Function('x', src);
+  }
+
+  // ======= حالة التطبيق =======
+  const canvas = document.getElementById('canvas');
+  const ctx = canvas.getContext('2d');
+  const statusEl = document.getElementById('status');
+  const exprListEl = document.getElementById('exprList');
+
+  const state = {
+    centerX: 0,
+    centerY: 0,
+    // scale = كم بكسل لكل وحدة
+    scale: 60,
+    dragging: false,
+    dragStart: {x:0, y:0, cx:0, cy:0},
+    mouse: {x:0, y:0, wx:0, wy:0},
+    expressions: [
+      { id: uid(), color: '#22d3ee', text: 'ص = س^2', visible: true },
+    ],
+  };
+
+  const COLORS = ['#22d3ee','#a78bfa','#f472b6','#34d399','#f59e0b','#60a5fa','#ef4444','#10b981'];
+
+  function uid() { return Math.random().toString(36).slice(2,9); }
+
+  // ======= تحويلات الإحداثيات =======
+  function worldToScreen(x, y) {
+    const ratio = window.devicePixelRatio || 1;
+    const w = canvas.width, h = canvas.height;
+    const sx = (w/2) + (x - state.centerX) * state.scale * ratio;
+    const sy = (h/2) - (y - state.centerY) * state.scale * ratio;
+    return { x: sx, y: sy };
+  }
+  function screenToWorld(sx, sy) {
+    const ratio = window.devicePixelRatio || 1;
+    const w = canvas.width, h = canvas.height;
+    const x = (sx - w/2) / (state.scale * ratio) + state.centerX;
+    const y = -(sy - h/2) / (state.scale * ratio) + state.centerY;
+    return { x, y };
+  }
+
+  // ======= إعداد اللوحة =======
+  function resizeCanvas() {
+    const ratio = window.devicePixelRatio || 1;
+    const rect = canvas.getBoundingClientRect();
+    canvas.width = Math.max(1, Math.floor(rect.width * ratio));
+    canvas.height = Math.max(1, Math.floor(rect.height * ratio));
+    draw();
+  }
+  window.addEventListener('resize', resizeCanvas);
+
+  // ======= رسم الشبكة والمحاور =======
+  function niceStep(pixelsPerUnit) {
+    // اختيار خطوة مناسبة للتدرّج بحسب المقياس
+    // الهدف ~ كل 90-130 بكسل خط رئيسي
+    const targetPx = 110;
+    const units = targetPx / pixelsPerUnit;
+    const pow10 = Math.pow(10, Math.floor(Math.log10(units)));
+    const candidates = [1, 2, 5, 10];
+    let best = pow10;
+    for (const c of candidates) {
+      const v = c * pow10;
+      if (Math.abs(v - units) < Math.abs(best - units)) best = v;
+    }
+    return best;
+  }
+
+  function drawGrid() {
+    const ratio = window.devicePixelRatio || 1;
+    const w = canvas.width, h = canvas.height;
+    const s = state.scale * ratio;
+
+    ctx.clearRect(0, 0, w, h);
+
+    // خلفية خفيفة
+    ctx.fillStyle = '#0a0f1b';
+    ctx.fillRect(0, 0, w, h);
+
+    // حساب خطوة رئيسية وفرعية
+    const step = niceStep(state.scale);
+    const subStep = step / 5;
+
+    // حدود العالم المرئي
+    const tl = screenToWorld(0, 0);
+    const br = screenToWorld(w, h);
+
+    // خطوط فرعية
+    ctx.lineWidth = 1;
+    ctx.strokeStyle = '#162133';
+    ctx.beginPath();
+    for (let x = Math.floor((tl.x)/subStep)*subStep; x <= br.x; x += subStep) {
+      const sx = worldToScreen(x, 0).x;
+      ctx.moveTo(sx+0.5, 0); ctx.lineTo(sx+0.5, h);
+    }
+    for (let y = Math.floor((br.y)/subStep)*subStep; y <= tl.y; y += subStep) {
+      const sy = worldToScreen(0, y).y;
+      ctx.moveTo(0, sy+0.5); ctx.lineTo(w, sy+0.5);
+    }
+    ctx.stroke();
+
+    // خطوط رئيسية
+    ctx.strokeStyle = '#20314b';
+    ctx.beginPath();
+    for (let x = Math.floor((tl.x)/step)*step; x <= br.x; x += step) {
+      const sx = worldToScreen(x, 0).x;
+      ctx.moveTo(sx+0.5, 0); ctx.lineTo(sx+0.5, h);
+    }
+    for (let y = Math.floor((br.y)/step)*step; y <= tl.y; y += step) {
+      const sy = worldToScreen(0, y).y;
+      ctx.moveTo(0, sy+0.5); ctx.lineTo(w, sy+0.5);
+    }
+    ctx.stroke();
+
+    // المحورين س/ص
+    ctx.strokeStyle = '#93c5fd';
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    const sx0 = worldToScreen(0, 0).x; // محور ص (x=0)
+    ctx.moveTo(sx0+0.5, 0); ctx.lineTo(sx0+0.5, h);
+    const sy0 = worldToScreen(0, 0).y; // محور س (y=0)
+    ctx.moveTo(0, sy0+0.5); ctx.lineTo(w, sy0+0.5);
+    ctx.stroke();
+
+    // وسم س وص
+    ctx.fillStyle = '#cbd5e1';
+    ctx.font = `${12*ratio}px system-ui, -apple-system, Segoe UI, Noto Sans Arabic, Arial`;
+    ctx.textAlign = 'right'; ctx.textBaseline = 'top';
+    ctx.fillText('س', Math.min(w-6, w-6), sy0 + 6);
+    ctx.textAlign = 'left'; ctx.textBaseline = 'bottom';
+    ctx.fillText('ص', sx0 + 6, Math.max(12, 12));
+
+    // أرقام التدريج (بالأرقام العربية)
+    ctx.fillStyle = '#9fb2c9';
+    ctx.textAlign = 'right'; ctx.textBaseline = 'top';
+    for (let x = Math.floor((tl.x)/step)*step; x <= br.x; x += step) {
+      if (Math.abs(x) < 1e-12) continue;
+      const p = worldToScreen(x, 0);
+      ctx.fillText(toArabicDigits(x.toFixed(2).replace(/\.00$/, '')), p.x - 4, sy0 + 6);
+    }
+    ctx.textAlign = 'left'; ctx.textBaseline = 'bottom';
+    for (let y = Math.floor((br.y)/step)*step; y <= tl.y; y += step) {
+      if (Math.abs(y) < 1e-12) continue;
+      const p = worldToScreen(0, y);
+      ctx.fillText(toArabicDigits(y.toFixed(2).replace(/\.00$/, '')), sx0 + 6, p.y - 2);
+    }
+  }
+
+  // ======= رسم الدوال =======
+  function drawFunctions() {
+    const ratio = window.devicePixelRatio || 1;
+    const w = canvas.width, h = canvas.height;
+    const left = screenToWorld(0, 0).x;
+    const right = screenToWorld(w, 0).x;
+
+    for (const [i, ex] of state.expressions.entries()) {
+      if (!ex.visible) continue;
+      let fn;
+      try { fn = createEvaluator(ex.text); }
+      catch (e) {
+        // إشارة خطأ في البطاقة إن وُجد
+        markExprError(ex.id, e.message);
+        continue;
+      }
+      clearExprError(ex.id);
+
+      ctx.lineWidth = 2 * ratio;
+      ctx.strokeStyle = ex.color || COLORS[i % COLORS.length];
+      ctx.beginPath();
+      const steps = Math.min(2000, Math.max(400, Math.floor(canvas.width / 1.5)));
+      const dx = (right - left) / steps;
+      let penDown = false;
+      for (let j = 0; j <= steps; j++) {
+        const x = left + j * dx;
+        let y = fn(x);
+        if (!isFinite(y)) { penDown = false; continue; }
+        const p = worldToScreen(x, y);
+        if (!penDown) { ctx.moveTo(p.x, p.y); penDown = true; }
+        else { ctx.lineTo(p.x, p.y); }
+      }
+      ctx.stroke();
+    }
+  }
+
+  function draw() {
+    drawGrid();
+    drawFunctions();
+    updateStatus();
+  }
+
+  // ======= عناصر الواجهة (قائمة الدوال) =======
+  function renderExprList() {
+    exprListEl.innerHTML = '';
+    state.expressions.forEach((ex, idx) => {
+      const card = document.createElement('div');
+      card.className = 'card';
+      card.dataset.id = ex.id;
+
+      const sw = document.createElement('div');
+      sw.className = 'swatch';
+      sw.style.background = ex.color || COLORS[idx % COLORS.length];
+      card.appendChild(sw);
+
+      const inp = document.createElement('input');
+      inp.className = 'input';
+      inp.placeholder = 'مثال: ص = س^2';
+      inp.value = ex.text || '';
+      inp.addEventListener('input', (e) => {
+        ex.text = e.target.value;
+        draw();
+        persistToUrlDebounced();
+      });
+      card.appendChild(inp);
+
+      const tools = document.createElement('div');
+      tools.style.display = 'flex';
+      tools.style.gap = '6px';
+      tools.style.alignItems = 'center';
+
+      const vis = document.createElement('input');
+      vis.type = 'checkbox';
+      vis.checked = ex.visible !== false;
+      vis.title = 'إظهار/إخفاء';
+      vis.addEventListener('change', () => { ex.visible = vis.checked; draw(); persistToUrlDebounced(); });
+      tools.appendChild(vis);
+
+      const del = document.createElement('button');
+      del.className = 'icon-btn';
+      del.title = 'حذف';
+      del.innerHTML = '🗑️';
+      del.addEventListener('click', () => {
+        state.expressions = state.expressions.filter(it => it.id !== ex.id);
+        renderExprList(); draw(); persistToUrlDebounced();
+      });
+      tools.appendChild(del);
+
+      card.appendChild(tools);
+
+      exprListEl.appendChild(card);
+    });
+  }
+
+  function markExprError(id, msg) {
+    const card = exprListEl.querySelector(`[data-id="${id}"]`);
+    if (!card) return;
+    card.style.borderColor = '#5b1a1a';
+    card.title = msg;
+  }
+  function clearExprError(id) {
+    const card = exprListEl.querySelector(`[data-id="${id}"]`);
+    if (!card) return;
+    card.style.borderColor = '#172133';
+    card.title = '';
+  }
+
+  // ======= أحداث اللوحة: سحب/تكبير/إحداثيات =======
+  function updateStatus() {
+    statusEl.textContent = `س = ${toArabicDigits(state.mouse.wx.toFixed(3))}, ص = ${toArabicDigits(state.mouse.wy.toFixed(3))} | مقياس: 1 وحدة ≈ ${Math.max(1, Math.round(state.scale))}px`;
+  }
+
+  canvas.addEventListener('mousemove', (e) => {
+    const rect = canvas.getBoundingClientRect();
+    const ratio = window.devicePixelRatio || 1;
+    const sx = (e.clientX - rect.left) * ratio;
+    const sy = (e.clientY - rect.top) * ratio;
+    const w = screenToWorld(sx, sy);
+    state.mouse = { x: sx, y: sy, wx: w.x, wy: w.y };
+    if (state.dragging) {
+      const dx = (sx - state.dragStart.x) / (state.scale * ratio);
+      const dy = (sy - state.dragStart.y) / (state.scale * ratio);
+      state.centerX = state.dragStart.cx - dx;
+      state.centerY = state.dragStart.cy + dy;
+      draw();
+    } else {
+      updateStatus();
+    }
+  });
+
+  canvas.addEventListener('mousedown', (e) => {
+    state.dragging = true;
+    state.dragStart.x = state.mouse.x;
+    state.dragStart.y = state.mouse.y;
+    state.dragStart.cx = state.centerX;
+    state.dragStart.cy = state.centerY;
+  });
+  window.addEventListener('mouseup', () => { state.dragging = false; persistToUrlDebounced(); });
+
+  canvas.addEventListener('wheel', (e) => {
+    e.preventDefault();
+    const delta = -Math.sign(e.deltaY);
+    const zoomFactor = Math.pow(1.12, delta); // تكبير/تصغير سلس
+
+    // تكبير حول موضع المؤشر
+    const before = screenToWorld(state.mouse.x, state.mouse.y);
+    state.scale = Math.min(1000, Math.max(10, state.scale * zoomFactor));
+    const after = screenToWorld(state.mouse.x, state.mouse.y);
+    state.centerX += (before.x - after.x);
+    state.centerY += (before.y - after.y);
+
+    draw();
+    persistToUrlDebounced();
+  }, { passive: false });
+
+  canvas.addEventListener('dblclick', () => { resetView(); draw(); persistToUrlDebounced(); });
+
+  // ======= أزرار الأدوات =======
+  document.getElementById('btnAdd').addEventListener('click', () => {
+    state.expressions.push({ id: uid(), color: COLORS[state.expressions.length % COLORS.length], text: '', visible: true });
+    renderExprList();
+  });
+
+  document.getElementById('btnReset').addEventListener('click', () => { resetEverything(); draw(); persistToUrlDebounced(); });
+
+  document.getElementById('btnExport').addEventListener('click', () => {
+    // حفظ صورة PNG بدقة الشاشة
+    const url = canvas.toDataURL('image/png');
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'graph.png';
+    a.click();
+  });
+
+  document.getElementById('btnShare').addEventListener('click', () => {
+    persistToUrl();
+    navigator.clipboard?.writeText(location.href).then(() => {
+      flashStatus('تم نسخ الرابط إلى الحافظة');
+    }).catch(() => flashStatus('تم تحديث الرابط – قم بنسخه من شريط العنوان'));
+  });
+
+  function flashStatus(msg) {
+    const old = statusEl.textContent;
+    statusEl.textContent = msg;
+    setTimeout(() => { statusEl.textContent = old; }, 1400);
+  }
+
+  // ======= حفظ/تحميل الحالة في الرابط =======
+  function serialize() {
+    return {
+      v: 1,
+      cx: state.centerX,
+      cy: state.centerY,
+      sc: state.scale,
+      expr: state.expressions.map(e => ({ t: e.text, c: e.color, v: !!e.visible }))
+    };
+  }
+  function deserialize(data) {
+    if (!data || typeof data !== 'object') return;
+    if (typeof data.cx === 'number') state.centerX = data.cx;
+    if (typeof data.cy === 'number') state.centerY = data.cy;
+    if (typeof data.sc === 'number') state.scale = data.sc;
+    if (Array.isArray(data.expr)) {
+      state.expressions = data.expr.map((it, i) => ({ id: uid(), text: it.t || '', color: it.c || COLORS[i % COLORS.length], visible: it.v !== false }));
+    }
+  }
+  function persistToUrl() {
+    const obj = serialize();
+    const json = JSON.stringify(obj);
+    const b64 = btoa(unescape(encodeURIComponent(json)));
+    const url = new URL(location.href);
+    url.hash = '#g=' + b64;
+    history.replaceState(null, '', url);
+  }
+  const persistToUrlDebounced = debounce(persistToUrl, 300);
+
+  function loadFromUrl() {
+    const h = location.hash || '';
+    const m = h.match(/#g=([^&]+)/);
+    if (!m) return false;
+    try {
+      const json = decodeURIComponent(escape(atob(m[1])));
+      const obj = JSON.parse(json);
+      deserialize(obj);
+      return true;
+    } catch (e) { console.warn('Invalid hash state', e); }
+    return false;
+  }
+
+  function debounce(fn, ms) { let t; return (...a) => { clearTimeout(t); t = setTimeout(() => fn(...a), ms); }; }
+
+  // ======= إعادة الضبط =======
+  function resetView() {
+    state.centerX = 0; state.centerY = 0; state.scale = 60;
+  }
+  function resetEverything() {
+    resetView();
+    state.expressions = [ { id: uid(), color: '#22d3ee', text: 'ص = س^2', visible: true } ];
+    renderExprList();
+  }
+
+  // ======= تهيئة =======
+  function init() {
+    // تخطيط الشبكة: اللوحة تأخذ كامل المساحة المتاحة
+    const main = document.querySelector('.canvas-wrap');
+    // تجعل اللوحة تملأ المساحة في الـ CSS؛ هنا فقط نرسم بقياس البكسل الفعلي
+    const ro = new ResizeObserver(() => resizeCanvas());
+    ro.observe(main);
+
+    renderExprList();
+
+    // تحميل الحالة إن وُجدت
+    if (!loadFromUrl()) persistToUrl();
+
+    resizeCanvas();
+    draw();
+  }
+
+  init();
+})();
+</script>
+</body>
+</html>
