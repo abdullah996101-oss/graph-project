@@ -179,34 +179,25 @@
 
   // ======= تحويل/تطبيع نص =======
   function preprocessBasic(s){
-  // 1) تطبيع عام
+  // تطبيع عام
   s = toEnglishDigits(String(s));
 
-  // المتغيرات بالعربية/الإنجليزية → رموز موحّدة
+  // توحيد أسماء المتغيرات/الثوابت
   s = s
-    .replace(/[سx]/gi, 'x')     // س أو x ← x
-    .replace(/[صy]/gi, 'y')     // ص أو y ← y (قد تظهر في المعادلات الضمنية)
-    .replace(/[θϴ]/g, 'theta'); // ثيتا ← theta للقطبي/البارامتري
+    .replace(/[سx]/gi, 'x')     // س → x
+    .replace(/[صy]/gi, 'y')     // ص → y
+    .replace(/[θϴ]/g, 'theta')  // θ → theta
+    .replace(/π|باي/gi, 'PI')   // π/باي → PI
+    .replace(/هـ/g, 'E')        // هـ → E (عدد أويلر)
+    .replace(/[÷]/g, '/')
+    .replace(/[×]/g, '*')
+    .replace(/\^/g, '**');
 
-  // الثوابت والرموز
-  s = s
-    .replace(/π|باي/gi, 'PI')   // π ← PI
-    .replace(/هـ/g, 'E')        // هـ ← E (عدد أويلر)
-    .replace(/[÷]/g, '/')       // ÷ ← /
-    .replace(/[×]/g, '*')       // × ← *
-    .replace(/\^/g, '**');      // ^ ← **
-
-  // دوال عربية شائعة → إنجليزية
+  // دوال عربية → إنجليزية
   arabicFns.forEach(([re, rep]) => s = s.replace(re, rep));
-  // ln ← log (الطبيعي)
   s = s.replace(/\bln\(/g, 'log(');
 
-  // 2) إدراج الضرب الضمني (الأهم لحالتك: 2س، (س+1)(س-1)، 3πس، 2جذر(س) ...)
-  // ملاحظات:
-  // - نضيف * بين رقم و (x|y|theta|t|PI|E|()
-  // - وبين (x|y|theta|t|PI|E|)) و (رقم|()
-  // - وبين (رقم|x|y|theta|t|PI|E) و (sin|cos|tan|sqrt|abs|log)
-  // - وبين ) و (  ، وكذلك (PI|E) ملاصقة للمتغيرات أو العكس
+  // إدراج الضرب الضمني (2x, (x+1)(x-1), 2sqrt(x), 3PIx, ...) 
   const FN = '(sin|cos|tan|sqrt|abs|log)';
   s = s.replace(new RegExp('(\\d)\\s*(x|y|theta|t|PI|E|\\()', 'gi'), '$1*$2');
   s = s.replace(new RegExp('(x|y|theta|t|PI|E|\\))\\s*(\\d|\\()', 'gi'), '$1*$2');
@@ -216,9 +207,70 @@
   s = s.replace(/(x|y|theta|t)\s*(PI|E)/gi, '$1*$2');
   s = s.replace(/(PI|E)\s*(x|y|theta|t)/gi, '$1*$2');
 
-  // مسافات
   return s.replace(/\s+/g, ' ').trim();
 }
+
+function containsY(s){ return /\by\b/i.test(String(s)); }
+
+/**
+ * يحاول عزل y إذا كانت المعادلة خطية فيها.
+ * يدعم الأنماط:
+ *   other = y ± b(x)           => y = other ∓ b
+ *   other = a(x)*y             => y = other / a
+ *   other = a(x)*y ± b(x)      => y = (other ∓ b)/a
+ *   (والعكس عندما تكون هذه الأنماط على الطرف الأيسر)
+ * يعيد نص JavaScript للدالة الصريحة أو null إن لم ينجح.
+ */
+function tryLinearSolveForY(lhsRaw, rhsRaw){
+  const L0 = preprocessBasic(lhsRaw);
+  const R0 = preprocessBasic(rhsRaw);
+
+  function solve(side, other){
+    // side: تعبير يحتوي y خطيًا (نحاول مطابقته)
+    // other: الطرف المقابل (لا يجب أن يحتوي y)
+    if (containsY(other)) return null; // لا نسمح بـ y في الطرف الآخر
+
+    let m;
+
+    // a(x)*y ± b(x)
+    m = side.match(/^(.+?)\*?y\s*([+\-])\s*(.+)$/i);
+    if (m && !containsY(m[1]) && !containsY(m[3])) {
+      const a=m[1].trim(), op=m[2], b=m[3].trim();
+      const num = op==='+' ? `(${other})-(${b})` : `(${other})+(${b})`;
+      return `(${num})/(${a})`;
+    }
+
+    // y ± b(x)
+    m = side.match(/^y\s*([+\-])\s*(.+)$/i);
+    if (m && !containsY(m[2])) {
+      const op=m[1], b=m[2].trim();
+      return op==='+' ? `(${other})-(${b})` : `(${other})+(${b})`;
+    }
+
+    // a(x)*y
+    m = side.match(/^(.+?)\*?y$/i);
+    if (m && !containsY(m[1])) {
+      const a=m[1].trim();
+      return `(${other})/(${a})`;
+    }
+
+    // y فقط
+    if (/^y$/i.test(side)) return `${other}`;
+
+    return null;
+  }
+
+  // جرّب عندما يكون y في الطرف الأيمن
+  let js = solve(R0, L0);
+  if (js) return js;
+
+  // جرّب عندما يكون y في الطرف الأيسر
+  js = solve(L0, R0);
+  if (js) return js;
+
+  return null;
+}
+  
   function sideIsY(raw){
   const s = preprocessBasic(raw).trim();
   return /^y$/i.test(s); // "y" فقط (بعد التطبيع)
@@ -227,36 +279,46 @@
 function normalizeExpr(raw){
   if(!raw) return {kind:'none'};
 
+  // 1) افصل المجال بين {}
   const {text, domain} = extractDomain(raw);
   let s = String(text).trim();
 
-  if (s.includes('=')) {
+  const hasEq = s.includes('=');
+  if (hasEq) {
     const [lhsRaw, rhsRaw] = s.split('=');
     const lhs = preprocessBasic(lhsRaw), rhs = preprocessBasic(rhsRaw);
 
-    // بارامترية وصيغ أخرى (كما في نسختك الحالية) ...
+    // بارامترية
     if(/x\(t\)\s*=/.test(lhs+rhs) && /y\(t\)\s*=/.test(lhs+rhs)){
       const pair = preprocessBasic(s);
       const mx = pair.match(/x\(t\)\s*=\s*([^,;]+)[,;]/i);
       const my = pair.match(/y\(t\)\s*=\s*([^,;]+)/i);
       if(mx && my){ return {kind:'param', xt: mx[1].trim(), yt: my[1].trim(), domain}; }
     }
+
+    // قطبية
     if(/r\((theta|ϴ|θ)\)\s*=/.test(lhs+rhs)){
       const all = preprocessBasic(s);
       const mr = all.match(/r\((?:theta|ϴ|θ)\)\s*=\s*(.+)/i);
       if(mr){ return {kind:'polar', rth: mr[1].trim(), domain}; }
     }
 
-    // صريحة: y في أحد الطرفين منفردة
-    if (sideIsY(lhs)) return { kind:'explicit', js: preprocessBasic(rhs), domain };
-    if (sideIsY(rhs)) return { kind:'explicit', js: preprocessBasic(lhs), domain };
+    // y على طرف منفرد
+    if (/^y$/i.test(preprocessBasic(lhsRaw).trim())) return {kind:'explicit', js: preprocessBasic(rhsRaw), domain};
+    if (/^y$/i.test(preprocessBasic(rhsRaw).trim())) return {kind:'explicit', js: preprocessBasic(lhsRaw), domain};
 
-    // ضمنية عامة: مثال س^2 + ص^2 = 9
-    return { kind:'implicit', eq: preprocessBasic(s), domain };
+    // ✅ جديد: حاول عزل y جبريًا إن كانت خطية
+    const solved = tryLinearSolveForY(lhsRaw, rhsRaw);
+    if (solved) {
+      return {kind:'explicit', js: preprocessBasic(solved), domain};
+    }
+
+    // ضمنية عامة
+    return {kind:'implicit', eq: preprocessBasic(s), domain};
   }
 
-  // بدون "=", نعتبرها صريحة: y = expr(x)
-  return { kind:'explicit', js: preprocessBasic(s), domain };
+  // بدون مساواة: اعتبرها صريحة y = expr(x)
+  return {kind:'explicit', js: preprocessBasic(s), domain};
 }
   function extractDomain(raw){
     // يبحث عن { ... } ويرجع كائن مجال
