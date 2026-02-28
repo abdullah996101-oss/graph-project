@@ -203,39 +203,84 @@
 
   // عزل y خطيًا إن أمكن (مثل: 2*x = y + 1 -> y = 2*x - 1)
   function tryLinearSolveForY(lhsRaw, rhsRaw){
-    const L0 = preprocessBasic(lhsRaw);
-    const R0 = preprocessBasic(rhsRaw);
+  const L0 = preprocessBasic(lhsRaw);
+  const R0 = preprocessBasic(rhsRaw);
 
-    function solve(side, other){
-      if (containsY(other)) return null;
-      let m;
-      // a(x)*y ± b(x)
-      m = side.match(/^(.+?)\*?y\s*([+\-])\s*(.+)$/i);
-      if (m && !containsY(m[1]) && !containsY(m[3])) {
-        const a=m[1].trim(), op=m[2], b=m[3].trim();
-        const num = op==='+' ? `(${other})-(${b})` : `(${other})+(${b})`;
-        return `(${num})/(${a})`;
-      }
-      // y ± b(x)
-      m = side.match(/^y\s*([+\-])\s*(.+)$/i);
-      if (m && !containsY(m[2])) {
-        const op=m[1], b=m[2].trim();
-        return op==='+' ? `(${other})-(${b})` : `(${other})+(${b})`;
-      }
-      // a(x)*y
-      m = side.match(/^(.+?)\*?y$/i);
-      if (m && !containsY(m[1])) {
-        const a=m[1].trim(); return `(${other})/(${a})`;
-      }
-      // y فقط
-      if (/^y$/i.test(side)) return `${other}`;
-      return null;
+  // تحاول استخراج y صريحًا إذا كانت المعادلة خطّية في y (درجة 1)
+  // "side" هو الطرف الذي يحتوي y، و "other" هو الطرف المقابل (يجب ألا يحتوي y)
+  function solve(side, other){
+    if (containsY(other)) return null; // الطرف المقابل يجب ألا يحوي y
+
+    let m;
+
+    // 1) a(x)*y ± b(x)      => y = (other ∓ b)/a
+    m = side.match(/^(.+?)\*?y\s*([+\-])\s*(.+)$/i);
+    if (m && !containsY(m[1]) && !containsY(m[3])) {
+      const a = m[1].trim(), op = m[2], b = m[3].trim();
+      const numer = (op === '+') ? `(${other})-(${b})` : `(${other})+(${b})`;
+      return `(${numer})/(${a})`;
     }
 
-    let js = solve(R0, L0); if (js) return js;
-    js = solve(L0, R0); if (js) return js;
+    // 2) y ± b(x)           => y = other ∓ b
+    m = side.match(/^y\s*([+\-])\s*(.+)$/i);
+    if (m && !containsY(m[2])) {
+      const op = m[1], b = m[2].trim();
+      return (op === '+') ? `(${other})-(${b})` : `(${other})+(${b})`;
+    }
+
+    // 3) a(x)*y             => y = other / a
+    m = side.match(/^(.+?)\*?y$/i);
+    if (m && !containsY(m[1])) {
+      const a = m[1].trim();
+      return `(${other})/(${a})`;
+    }
+
+    // 4) y فقط              => y = other
+    if (/^y$/i.test(side)) return `${other}`;
+
+    // 5) other ± y          => other + y = RHS  => y = RHS - other
+    //                         other - y = RHS  => y = other - RHS
+    m = side.match(/^(.+)\s*([+\-])\s*y$/i);
+    if (m && !containsY(m[1])) {
+      const otherOnSide = m[1].trim();
+      const op = m[2];
+      // side = otherOnSide (+|-) y
+      // إذا side = otherOnSide + y  => y = other - otherOnSide
+      // إذا side = otherOnSide - y  => y = otherOnSide - other
+      return (op === '+')
+        ? `(${other})-(${otherOnSide})`
+        : `(${otherOnSide})-(${other})`;
+    }
+
+    // 6) other ± a(x)*y     => other + a*y = RHS => y = (RHS - other)/a
+    //                         other - a*y = RHS => y = (other - RHS)/a
+    m = side.match(/^(.+)\s*([+\-])\s*(.+?)\*?y$/i);
+    if (m && !containsY(m[1]) && !containsY(m[3])) {
+      const otherOnSide = m[1].trim();
+      const op = m[2];
+      const a = m[3].trim();
+      if (op === '+') {
+        // other + a*y = RHS  -> a*y = RHS - other  -> y = (RHS - other)/a
+        return `((${other})-(${otherOnSide}))/(${a})`;
+      } else {
+        // other - a*y = RHS  -> -a*y = RHS - other -> y = (other - RHS)/a
+        return `((${otherOnSide})-(${other}))/(${a})`;
+      }
+    }
+
     return null;
   }
+
+  // جرّب عندما يكون y في الطرف الأيمن
+  let js = solve(R0, L0);
+  if (js) return js;
+
+  // جرّب عندما يكون y في الطرف الأيسر
+  js = solve(L0, R0);
+  if (js) return js;
+
+  return null;
+}
 
   const sideIsY = (raw) => /^y$/i.test(preprocessBasic(raw).trim());
 
